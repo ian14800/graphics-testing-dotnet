@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:esriUI="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
+             x:Class="NETGraphicsTester.MainPage"
+                                                 BackgroundColor="{AppThemeBinding Light=#F7F7F7, Dark=#0F0F0F}">
+
+                <Grid RowDefinitions="3*,Auto,Auto"
+          RowSpacing="12"
+          Padding="12">
+        <Border Grid.Row="0"
+                StrokeThickness="1"
+                                                                Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
+                                                                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#101010}"
+                MinimumHeightRequest="320">
+                        <Grid>
+                                <esriUI:LocalSceneView x:Name="sceneView" Scene="{Binding Scene}" />
+                                <Border HorizontalOptions="End"
+                                                VerticalOptions="End"
+                                                Margin="10"
+                                                Padding="10,4"
+                                                StrokeThickness="0"
+                                                BackgroundColor="#AA000000">
+                                        <Label x:Name="GraphicsCountLabel"
+                                                   Text="Graphics: 0"
+                                                   TextColor="White"
+                                                   FontSize="12" />
+                                </Border>
+                        </Grid>
+        </Border>
+
+        <ScrollView Grid.Row="1"
+                    Orientation="Horizontal"
+                    HorizontalScrollBarVisibility="Always">
+            <HorizontalStackLayout Spacing="10"
+                                   Padding="0,0,0,2">
+                <Border StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
+                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#161616}"
+                        Padding="10"
+                        WidthRequest="240">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Input"
+                               FontAttributes="Bold"
+                               FontSize="13" />
+                        <HorizontalStackLayout Spacing="8"
+                                               VerticalOptions="Center">
+                            <Label Text="Count"
+                                   VerticalOptions="Center" />
+                            <Entry x:Name="CountEntry"
+                                   Text="25"
+                                   Keyboard="Numeric"
+                                   HorizontalOptions="Fill"
+                                   ClearButtonVisibility="WhileEditing" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="8"
+                                               VerticalOptions="Center">
+                            <Label Text="Runs"
+                                   VerticalOptions="Center" />
+                            <Entry x:Name="RunsCount"
+                                   Text="100"
+                                   Keyboard="Numeric"
+                                   HorizontalOptions="Fill"
+                                   ClearButtonVisibility="WhileEditing" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
+                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#161616}"
+                        Padding="10"
+                                                WidthRequest="300">
+                    <VerticalStackLayout Spacing="8">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                        <Label Text="Manual Operations"
+                                                                   FontAttributes="Bold"
+                                                                   FontSize="13"
+                                                                   VerticalOptions="Center" />
+                                                        <Button x:Name="ToggleManualOperationsButton"
+                                                                        Grid.Column="1"
+                                                                        Text="Show controls"
+                                                                        FontSize="12"
+                                                                        Padding="10,4"
+                                                                        MinimumHeightRequest="32"
+                                                                        Clicked="OnToggleManualOperationsClicked" />
+                                                </Grid>
+                                                <ScrollView x:Name="ManualOperationsPanel"
+                                                                        IsVisible="False"
+                                                                        Orientation="Vertical"
+                                                                        HeightRequest="190"
+                                                                        VerticalScrollBarVisibility="Always">
+                            <VerticalStackLayout Spacing="8">
+                                <Button Text="Add"
+                                        Clicked="OnAddGraphicsClicked" />
+                                <Button Text="Remove"
+                                        Clicked="OnRemoveGraphicsClicked" />
+                                <Button Text="Move (Uniform)"
+                                        Clicked="OnMoveGraphicsUniformClicked" />
+                                <Button Text="Move (Random)"
+                                        Clicked="OnMoveGraphicsRandomClicked" />
+                                <Button Text="Swap placement"
+                                        Clicked="OnSwapPlacementClicked" />
+                                <Button Text="Add altitude"
+                                        Clicked="OnAddAltitudeOffsetClicked" />
+                                <Button Text="Toggle Graphics Visibility"
+                                        Clicked="OnToggleGraphicsVisibilityClicked"/>
+                                <Button Text="Toggle Graphics Selected"
+                                        Clicked="OnToggleGraphicsSelectedClicked"/>
+                                <Button Text="Swap Renderer"
+                                        Clicked="OnSwapRendererClicked" />
+                                <Button Text="Add Symbol Overrides"
+                                        Clicked="OnAddSymbolsClicked" />
+                                <Button Text="Remove Overlay"
+                                        Clicked="OnRemoveOverlayClicked" />
+                                <Button Text="Add Overlay"
+                                        Clicked="OnAddOverlayClicked" />
+                                <Button Text="Toggle Visibility"
+                                        Clicked="OnToggleVisibiltyClicked"/>
+                                <Button Text="Toggle Opacity"
+                                        Clicked="OnToggleOpacityClicked"/>
+                            </VerticalStackLayout>
+                        </ScrollView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
+                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#161616}"
+                        Padding="10"
+                        WidthRequest="320">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Animated Workflow Runner"
+                               FontAttributes="Bold"
+                               FontSize="13" />
+                        <Picker x:Name="WorkflowPicker"
+                                Title="Select a workflow">
+                            <Picker.ItemsSource>
+                                <x:Array Type="{x:Type x:String}">
+                                    <x:String>Move graphics (uniform)</x:String>
+                                    <x:String>Move graphics (random)</x:String>
+                                    <x:String>Swap renderer</x:String>
+                                    <x:String>Add symbols</x:String>
+                                    <x:String>Add/remove overlay</x:String>
+                                    <x:String>Add/move/remove</x:String>
+                                    <x:String>Add/give symbols/remove</x:String>
+                                    <x:String>Add/give symbols/remove overlay</x:String>
+                                </x:Array>
+                            </Picker.ItemsSource>
+                        </Picker>
+                        <Button Text="Run animated workflow"
+                                Clicked="OnRunAnimationsClicked" />
+                    </VerticalStackLayout>
+                </Border>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <VerticalStackLayout Grid.Row="2"
+                             Spacing="2">
+            <Label x:Name="StatusLabel"
+                   Text="Initializing scene..."
+                   LineBreakMode="WordWrap" />
+            <Label x:Name="EventTimer"
+                   Text=" // event time"
+                   LineBreakMode="WordWrap" />
+            <Label x:Name="DrawTimer"
+                   Text=" // draw time"
+                   LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+
+         <Grid x:Name="IdentifyPopupOverlay"
+                Grid.RowSpan="3"
+                IsVisible="False"
+                BackgroundColor="#AA000000"
+                Padding="20">
+             <Border HorizontalOptions="Center"
+                      VerticalOptions="Center"
+                      MaximumWidthRequest="420"
+                      Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
+                      BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1A1A1A}"
+                      Padding="14">
+                  <VerticalStackLayout Spacing="10">
+                      <Label Text="Edit Graphic Attributes"
+                              FontAttributes="Bold"
+                              FontSize="16" />
+
+                      <ScrollView MaximumHeightRequest="320">
+                           <VerticalStackLayout Spacing="8">
+                                <Label Text="class_value" FontSize="12" />
+                                <Entry x:Name="ClassValueEntry"
+                                        ClearButtonVisibility="WhileEditing" />
+
+                                <Label Text="size_value" FontSize="12" />
+                                <Entry x:Name="SizeValueEntry"
+                                        ClearButtonVisibility="WhileEditing" />
+
+                                <Label Text="transparency_value" FontSize="12" />
+                                <Entry x:Name="TransparencyValueEntry"
+                                        ClearButtonVisibility="WhileEditing" />
+
+                                <Label Text="rotation_value" FontSize="12" />
+                                <Entry x:Name="RotationValueEntry"
+                                        ClearButtonVisibility="WhileEditing" />
+
+                                <Label Text="color_value" FontSize="12" />
+                                <Entry x:Name="ColorValueEntry"
+                                        ClearButtonVisibility="WhileEditing" />
+                           </VerticalStackLayout>
+                      </ScrollView>
+
+                      <HorizontalStackLayout HorizontalOptions="End"
+                                                 Spacing="10">
+                           <Button Text="Cancel"
+                                    Clicked="OnIdentifyEditorCancelClicked" />
+                           <Button Text="OK"
+                                    Clicked="OnIdentifyEditorOkClicked" />
+                      </HorizontalStackLayout>
+                  </VerticalStackLayout>
+             </Border>
+         </Grid>
+    </Grid>
+
+</ContentPage>

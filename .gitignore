@@ -1,0 +1,11 @@
+NETGraphicsTester/bin
+NETGraphicsTester/obj
+
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+.DS_Store
+Thumbs.db
