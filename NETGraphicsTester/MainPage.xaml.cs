@@ -205,6 +205,11 @@ namespace NETGraphicsTester
 
         private void OnGraphicsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            // if (isBatchRun)
+            // {
+            //     return;
+            // }
+
             UpdateGraphicsCountLabel();
         }
 
