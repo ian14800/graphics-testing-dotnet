@@ -68,7 +68,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.40" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
-		<PackageReference Include="Esri.ArcGISRuntime.Maui" Version="300.2.0-daily5051" />
+		<PackageReference Include="Esri.ArcGISRuntime.Maui" Version="300.2.0-daily5055" />
 	</ItemGroup>
 
 </Project>

@@ -14,6 +14,22 @@
                                                                 BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#101010}"
                 MinimumHeightRequest="320">
                         <Grid>
+                                <Picker x:Name="ScenePicker"
+                                                Title="Select a scene"
+                                                HorizontalOptions="End"
+                                                VerticalOptions="Start"
+                                                Margin="12"
+                                                ZIndex="2"
+                                                SelectedIndexChanged="OnScenePickerSelectionChanged">
+                                        <Picker.ItemsSource>
+                                                <x:Array Type="{x:Type x:String}">
+                                                <x:String>Blank</x:String>
+                                                <x:String>Light</x:String>
+                                                <x:String>Medium</x:String>
+                                                <x:String>Heavy</x:String>
+                                                </x:Array>
+                                        </Picker.ItemsSource>
+                                </Picker>
                                 <esriUI:LocalSceneView x:Name="sceneView" Scene="{Binding Scene}" />
                                 <Border HorizontalOptions="End"
                                                 VerticalOptions="End"
