@@ -1,6 +1,9 @@
 NETGraphicsTester/bin
 NETGraphicsTester/obj
 
+//local credentials
+NETGraphicsTester/Resources/Raw/arcgis.local.json
+
 .vs/
 *.user
 *.suo
