@@ -1,9 +1,10 @@
-﻿using Esri.ArcGISRuntime;
+﻿﻿using Esri.ArcGISRuntime;
 using Esri.ArcGISRuntime.Http;
 using Esri.ArcGISRuntime.Maui;
 using Esri.ArcGISRuntime.Security;
 using System.Reflection;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace NETGraphicsTester
 {
@@ -43,10 +44,17 @@ namespace NETGraphicsTester
 
                     AuthenticationManager.Current.ChallengeHandler = new ChallengeHandler(async challengeInfo =>
                     {
+                        var settings = await LoadArcGisSettingsAsync();
+
+                        if (string.IsNullOrWhiteSpace(settings.Username) || string.IsNullOrWhiteSpace(settings.Password))
+                        {
+                            throw new InvalidOperationException("ArcGIS credentials are missing, create Resources/Raw/arcgis.local.json");
+                        }
+
                         // Use the sharing endpoint for ArcGIS Online; change for Enterprise if needed.
-                        var portalUri = new Uri("https://www.arcgis.com/sharing/rest");
+                        var portalUri = new Uri(settings.PortalUrl);
                         //Insert credentials here
-                        var credential = AccessTokenCredential.CreateAsync(portalUri, "xxx", "xxx").Result;
+                        var credential = AccessTokenCredential.CreateAsync(portalUri, settings.Username, settings.Password).Result;
 
                         // Register the credential so it can be reused
                         AuthenticationManager.Current.AddCredential(credential);
@@ -73,6 +81,27 @@ namespace NETGraphicsTester
             }
 
             return builder.Build();
+        }
+
+        private sealed class ArcGisConfig
+        {
+            public ArcGisSettings ArcGIS { get; set; } = new();
+        }
+
+        private sealed class ArcGisSettings
+        {
+            public string PortalUrl { get; set; } = "https://www.arcgis.com/sharing/rest";
+            public string Username { get; set; } = "";
+            public string Password { get; set; } = "";
+        }
+
+        private static async Task<ArcGisSettings> LoadArcGisSettingsAsync()
+        {
+            await using var stream = await FileSystem.OpenAppPackageFileAsync("arcgis.local.json");
+            var config = await JsonSerializer.DeserializeAsync<ArcGisConfig>(stream);
+
+            return config?.ArcGIS 
+                ?? throw new InvalidOperationException("ArcGIS configuration is missing or invalid.");
         }
     }
 }

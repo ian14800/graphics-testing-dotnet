@@ -24,7 +24,7 @@ namespace NETGraphicsTester
         public MainPage()
         {
             InitializeComponent();
-            graphicsOverlay.Graphics.CollectionChanged += OnGraphicsCollectionChanged;
+            // graphicsOverlay.Graphics.CollectionChanged += OnGraphicsCollectionChanged;
             UpdateGraphicsCountLabel();
             _ = InitializeSceneAsync();
         }
@@ -88,6 +88,7 @@ namespace NETGraphicsTester
             {
                 drawClock.Stop();
                 DrawTimer.Text = $"{drawClock.ElapsedMilliseconds} ms // draw timer";
+                UpdateGraphicsCountLabel();
             }
         }
 
@@ -203,15 +204,15 @@ namespace NETGraphicsTester
             }
         }
 
-        private void OnGraphicsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            // if (isBatchRun)
-            // {
-            //     return;
-            // }
+        // private void OnGraphicsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        // {
+        //     // if (isBatchRun)
+        //     // {
+        //     //     return;
+        //     // }
 
-            UpdateGraphicsCountLabel();
-        }
+        //     UpdateGraphicsCountLabel();
+        // }
 
         private void UpdateGraphicsCountLabel()
         {
