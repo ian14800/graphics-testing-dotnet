@@ -79,7 +79,37 @@
                                    HorizontalOptions="Fill"
                                    ClearButtonVisibility="WhileEditing" />
                         </HorizontalStackLayout>
-                    </VerticalStackLayout>
+
+                        <Label Text="Renderer" FontAttributes="Bold" />
+
+                        <Picker x:Name="RendererPicker"
+                                Title="Select renderer"
+                                SelectedIndex="0"
+                                SelectedIndexChanged="OnRendererSelectionChanged">
+                        <Picker.ItemsSource>
+                                <x:Array Type="{x:Type x:String}">
+                                <x:String>Red circle</x:String>
+                                <x:String>Blue square</x:String>
+                                <x:String>3D models</x:String>
+                                <x:String>Pictures</x:String>
+                                <x:String>Visual variables</x:String>
+                                <x:String>JSON renderer...</x:String>
+                                </x:Array>
+                        </Picker.ItemsSource>
+                        </Picker>
+
+                        <VerticalStackLayout x:Name="JsonRendererPanel"
+                                        IsVisible="False"
+                                        Spacing="8">
+                        <Editor x:Name="RendererJsonEditor"
+                                Placeholder="Paste ArcGIS renderer JSON"
+                                AutoSize="TextChanges"
+                                MaximumHeightRequest="200" />
+
+                        <Button Text="Apply JSON renderer"
+                                Clicked="OnApplyJsonRendererClicked" />
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>                    
                 </Border>
 
                 <Border StrokeThickness="1"
@@ -123,8 +153,8 @@
                                         Clicked="OnToggleGraphicsVisibilityClicked"/>
                                 <Button Text="Toggle Graphics Selected"
                                         Clicked="OnToggleGraphicsSelectedClicked"/>
-                                <Button Text="Swap Renderer"
-                                        Clicked="OnSwapRendererClicked" />
+                                <!-- <Button Text="Swap Renderer"
+                                        Clicked="OnSwapRendererClicked" /> -->
                                 <Button Text="Add Symbol Overrides"
                                         Clicked="OnAddSymbolsClicked" />
                                 <Button Text="Remove Overlay"

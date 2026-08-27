@@ -280,11 +280,11 @@ namespace NETGraphicsTester
                 MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
 
                 Graphic graphic = new Graphic(point);
-                graphic.Attributes["class_value"] = random.Next(ModelClassMin, ModelClassMax + 1).ToString();
-                graphic.Attributes["size_value"] = random.Next(0, 100 + 1).ToString();
-                graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1).ToString();
-                graphic.Attributes["rotation_value"] = random.Next(0, 360 + 1).ToString();
-                graphic.Attributes["color_value"] = random.Next(0, 100 + 1).ToString();
+                graphic.Attributes["class_value"] = random.Next(ModelClassMin, ModelClassMax + 1);
+                graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                graphic.Attributes["rotation_value"] = random.Next(0, 360 + 1);
+                graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
                 graphicsOverlay.Graphics.Add(graphic);
                 System.Diagnostics.Debug.WriteLine("Added graphic");
             }
@@ -338,18 +338,34 @@ namespace NETGraphicsTester
             }
         }
 
-        private async void OnSwapRendererClicked(object sender, EventArgs e)
+        // private async void OnSwapRendererClicked(object sender, EventArgs e)
+        // {
+        //     await SwapRendererOperationAsync(updateUi: true);
+        // }
+
+        private async void OnRendererSelectionChanged(object sender, EventArgs e)
         {
-            await SwapRendererOperationAsync(updateUi: true);
+            if (sender is not Picker picker || picker.SelectedIndex < 0)
+            {
+                return;
+            }
+
+            const int jsonRendererIndex = 5;
+            JsonRendererPanel.IsVisible = picker.SelectedIndex == jsonRendererIndex;
+
+            if (picker.SelectedIndex != jsonRendererIndex)
+            {
+                await SwapRendererOperationAsync(picker.SelectedIndex, updateUi: true);
+            }
         }
 
-        private async Task SwapRendererOperationAsync(bool updateUi)
+        private async Task SwapRendererOperationAsync(int rendererIndex, bool updateUi)
         {
-            currentRenderer++;
-            if (currentRenderer >= 5)
-            {
-                currentRenderer = 0;
-            }
+            // currentRenderer++;
+            // if (currentRenderer >= 5)
+            // {
+            //     currentRenderer = 0;
+            // }
 
             if (updateUi)
             {
@@ -364,7 +380,7 @@ namespace NETGraphicsTester
             }
 
 
-            switch (currentRenderer)
+            switch (rendererIndex)
             {
                 case 0:
                     graphicsOverlay.Renderer = redCircle;
@@ -497,6 +513,28 @@ namespace NETGraphicsTester
                         StatusLabel.Text = $"Renderer set to simple red circle.";
                     }
                     break;
+            }
+        }
+
+        private void OnApplyJsonRendererClicked(object sender, EventArgs e)
+        {
+            string json = RendererJsonEditor.Text?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                StatusLabel.Text = "Enter renderer JSON.";
+                return;
+            }
+
+            try
+            {
+                Renderer renderer = Renderer.FromJson(json);
+                graphicsOverlay.Renderer = renderer;
+                StatusLabel.Text = "JSON renderer applied.";
+            }
+            catch (Exception ex)
+            {
+                StatusLabel.Text = $"Invalid renderer JSON: {ex.Message}";
             }
         }
 
@@ -1063,9 +1101,9 @@ namespace NETGraphicsTester
                         case "Move graphics (random)":
                             MoveGraphicsRandomOperation(updateUi: false);
                             break;
-                        case "Swap renderer":
-                            await SwapRendererOperationAsync(updateUi: false);
-                            break;
+                        // case "Swap renderer":
+                        //     await SwapRendererOperationAsync(updateUi: false);
+                        //     break;
                         case "Add symbols":
                             await AddSymbolsOperationAsync(updateUi: false);
                             break;
