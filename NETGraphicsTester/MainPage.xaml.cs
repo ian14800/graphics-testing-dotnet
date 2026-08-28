@@ -92,21 +92,21 @@ namespace NETGraphicsTester
             }
         }
 
-        private void SceneView_WarningsChanged(object? sender, EventArgs e)
-        {
-            if (sender is Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
-            {
-                LogSceneViewWarnings(localSceneView);
-            }
-        }
+        //private void SceneView_WarningsChanged(object? sender, EventArgs e)
+        //{
+        //    if (sender is Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
+        //    {
+        //        LogSceneViewWarnings(localSceneView);
+        //    }
+        //}
 
-        private static void LogSceneViewWarnings(Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
-        {
-            foreach (Exception warning in localSceneView.Warnings)
-            {
-                Debug.WriteLine($"LocalSceneView warning: {warning}");
-            }
-        }
+        //private static void LogSceneViewWarnings(Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
+        //{
+        //    foreach (Exception warning in localSceneView.Warnings)
+        //    {
+        //        Debug.WriteLine($"LocalSceneView warning: {warning}");
+        //    }
+        //}
 
         private async Task InitializeSceneAsync()
         {
@@ -123,9 +123,9 @@ namespace NETGraphicsTester
                         return;
                     }
 
-                    localSceneView.WarningsChanged += SceneView_WarningsChanged;
+                    //localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
-                    var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISTopographic);
+                    var scene = new Scene(SceneViewingMode.Global, BasemapStyle.ArcGISTopographic);
                     var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
 
                     await scene.LoadAsync();
@@ -153,7 +153,7 @@ namespace NETGraphicsTester
                     localSceneView.SetViewpointCamera(camera);
                     localSceneView.DrawStatusChanged += SceneView_DrawStatusChanged;
                     localSceneView.GeoViewTapped += OnSceneViewTapped;
-                    LogSceneViewWarnings(localSceneView);
+                    //LogSceneViewWarnings(localSceneView);
                 }
                 catch (Exception ex)
                 {
@@ -283,7 +283,7 @@ namespace NETGraphicsTester
                 graphic.Attributes["class_value"] = random.Next(ModelClassMin, ModelClassMax + 1);
                 graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
                 graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                graphic.Attributes["rotation_value"] = random.Next(0, 360 + 1);
+                graphic.Attributes["rotation_value"] = random.Next(0, 100 + 1);
                 graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
                 graphicsOverlay.Graphics.Add(graphic);
                 System.Diagnostics.Debug.WriteLine("Added graphic");
@@ -529,6 +529,30 @@ namespace NETGraphicsTester
             try
             {
                 Renderer renderer = Renderer.FromJson(json);
+                graphicsOverlay.Renderer = renderer;
+                StatusLabel.Text = "JSON renderer applied.";
+            }
+            catch (Exception ex)
+            {
+                StatusLabel.Text = $"Invalid renderer JSON: {ex.Message}";
+            }
+        }
+
+        private void OnApplyJsonRendererClickedRotation(object sender, EventArgs e)
+        {
+            string json = RendererJsonEditor.Text?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                StatusLabel.Text = "Enter renderer JSON.";
+                return;
+            }
+
+            try
+            {
+                Renderer renderer = Renderer.FromJson(json);
+                renderer.RotationExpression = "50";
+                renderer.RotationType = RotationType.Geographic;
                 graphicsOverlay.Renderer = renderer;
                 StatusLabel.Text = "JSON renderer applied.";
             }

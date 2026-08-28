@@ -87,7 +87,7 @@
     {
       "type": "rotationInfo",
       "field": "rotation_value",
-      "axis": "heading",
+      "axis": "roll",
       "rotationType": "geographic"
     }
   ]
