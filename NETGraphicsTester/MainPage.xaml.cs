@@ -283,7 +283,7 @@ namespace NETGraphicsTester
                 graphic.Attributes["class_value"] = random.Next(ModelClassMin, ModelClassMax + 1);
                 graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
                 graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                graphic.Attributes["rotation_value"] = random.Next(0, 100 + 1);
+                graphic.Attributes["rotation_value"] = "50";
                 graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
                 graphicsOverlay.Graphics.Add(graphic);
                 System.Diagnostics.Debug.WriteLine("Added graphic");
@@ -551,8 +551,8 @@ namespace NETGraphicsTester
             try
             {
                 Renderer renderer = Renderer.FromJson(json);
-                renderer.RotationExpression = "50";
-                renderer.RotationType = RotationType.Geographic;
+                renderer.SceneProperties.RollExpression = "50";
+                //renderer.RotationType = RotationType.Geographic;
                 graphicsOverlay.Renderer = renderer;
                 StatusLabel.Text = "JSON renderer applied.";
             }
@@ -809,21 +809,24 @@ namespace NETGraphicsTester
                 drawClock.Start();
             }
 
-            SimpleMarkerSymbol greenTriangle = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Triangle, System.Drawing.Color.Green, 40);
-            MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1", 100);
-            MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2", 100);
-            MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3", 100);
-            MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4", 100);
-            MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5", 100);
-            MultilayerPointSymbol pictureSymbol1 = await createPictureLayerFromFile("1", 100);
-            MultilayerPointSymbol pictureSymbol2 = await createPictureLayerFromFile("2", 100);
-            MultilayerPointSymbol pictureSymbol3 = await createPictureLayerFromFile("3", 100);
-            MultilayerPointSymbol pictureSymbol4 = await createPictureLayerFromFile("4", 100);
-            MultilayerPointSymbol pictureSymbol5 = await createPictureLayerFromFile("5", 100);
+            SimpleMarkerSymbol greenTriangle = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Cross, System.Drawing.Color.Green, 50);
+            greenTriangle.AngleAlignment = SymbolAngleAlignment.Map;
+            SimpleMarkerSymbol yellowTriangle = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Cross, System.Drawing.Color.Yellow, 50);
+            yellowTriangle.AngleAlignment = SymbolAngleAlignment.Screen;
+            //MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1", 100);
+            //MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2", 100);
+            //MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3", 100);
+            //MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4", 100);
+            //MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5", 100);
+            //MultilayerPointSymbol pictureSymbol1 = await createPictureLayerFromFile("1", 100);
+            //MultilayerPointSymbol pictureSymbol2 = await createPictureLayerFromFile("2", 100);
+            //MultilayerPointSymbol pictureSymbol3 = await createPictureLayerFromFile("3", 100);
+            //MultilayerPointSymbol pictureSymbol4 = await createPictureLayerFromFile("4", 100);
+            //MultilayerPointSymbol pictureSymbol5 = await createPictureLayerFromFile("5", 100);
             for (int i = 0; i < assignCount; i++)
             {
                 int symbolType = random.Next(1, 4);
-                string symbolIndex = random.Next(5, 11).ToString();
+                //string symbolIndex = random.Next(5, 11).ToString();
                 Graphic graphic = graphicsOverlay.Graphics[i];
 
                 switch (symbolType)
@@ -833,33 +836,35 @@ namespace NETGraphicsTester
                         symbolTypeCounts[0]++;
                         break;
                     case 2:
-                        MultilayerPointSymbol modelSymbol = symbolIndex switch
-                        {
-                            "5" => modelSymbol5,
-                            "6" => modelSymbol1,
-                            "7" => modelSymbol2,
-                            "8" => modelSymbol3,
-                            "9" => modelSymbol4,
-                            "10" => modelSymbol5,
-                            _ => modelSymbol1
-                        };
-                        graphic.Symbol = modelSymbol;
+                        graphic.Symbol = yellowTriangle;
                         symbolTypeCounts[1]++;
+                        //MultilayerPointSymbol modelSymbol = symbolIndex switch
+                        //{
+                        //    "5" => modelSymbol5,
+                        //    "6" => modelSymbol1,
+                        //    "7" => modelSymbol2,
+                        //    "8" => modelSymbol3,
+                        //    "9" => modelSymbol4,
+                        //    "10" => modelSymbol5,
+                        //    _ => modelSymbol1
+                        //};
+                        //graphic.Symbol = modelSymbol;
+                        //symbolTypeCounts[1]++;
                         break;
-                    case 3:
-                        MultilayerPointSymbol pictureSymbol = symbolIndex switch
-                        {
-                            "5" => pictureSymbol5,
-                            "6" => pictureSymbol1,
-                            "7" => pictureSymbol2,
-                            "8" => pictureSymbol3,
-                            "9" => pictureSymbol4,
-                            "10" => pictureSymbol5,
-                            _ => pictureSymbol1
-                        };
-                        graphic.Symbol = pictureSymbol;
-                        symbolTypeCounts[2]++;
-                        break;
+                    //case 3:
+                    //    MultilayerPointSymbol pictureSymbol = symbolIndex switch
+                    //    {
+                    //        "5" => pictureSymbol5,
+                    //        "6" => pictureSymbol1,
+                    //        "7" => pictureSymbol2,
+                    //        "8" => pictureSymbol3,
+                    //        "9" => pictureSymbol4,
+                    //        "10" => pictureSymbol5,
+                    //        _ => pictureSymbol1
+                    //    };
+                    //    graphic.Symbol = pictureSymbol;
+                    //    symbolTypeCounts[2]++;
+                        //break;
                     default:
                         graphic.Symbol = greenTriangle;
                         break;
