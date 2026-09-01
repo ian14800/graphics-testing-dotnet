@@ -92,7 +92,7 @@
                                 <x:String>Blue square</x:String>
                                 <x:String>3D models</x:String>
                                 <x:String>Pictures</x:String>
-                                <x:String>Visual variables</x:String>
+                                <x:String>Styles</x:String>
                                 <x:String>JSON renderer...</x:String>
                                 </x:Array>
                         </Picker.ItemsSource>
