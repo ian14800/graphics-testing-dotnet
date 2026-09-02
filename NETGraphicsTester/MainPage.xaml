@@ -93,6 +93,7 @@
                                 <x:String>3D models</x:String>
                                 <x:String>Pictures</x:String>
                                 <x:String>Styles</x:String>
+                                <x:String>Class breaks</x:String>
                                 <x:String>JSON renderer...</x:String>
                                 </x:Array>
                         </Picker.ItemsSource>

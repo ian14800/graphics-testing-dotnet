@@ -350,7 +350,7 @@ namespace NETGraphicsTester
                 return;
             }
 
-            const int jsonRendererIndex = 5;
+            const int jsonRendererIndex = 6;
             JsonRendererPanel.IsVisible = picker.SelectedIndex == jsonRendererIndex;
 
             if (picker.SelectedIndex != jsonRendererIndex)
@@ -515,6 +515,26 @@ namespace NETGraphicsTester
                     graphicsOverlay.Renderer = styleUniqueRenderer;
 
                     break;
+                case 5:
+                    ClassBreaksRenderer classBreaksRenderer = new ClassBreaksRenderer();
+
+                    classBreaksRenderer.FieldName = "class_value";
+                    Symbol lowSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Green, 10);
+                    Symbol mediumSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Yellow, 15);
+                    Symbol highSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 20);
+                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Low", "0-1", 0, 1, lowSymbol));
+                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Medium", "2-3", 2, 3, mediumSymbol));
+                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("High", "4-9", 4, 9, highSymbol));
+
+                    graphicsOverlay.Renderer = classBreaksRenderer;
+                    operationTimer.Stop();
+
+                    if (updateUi)
+                    {
+                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                        StatusLabel.Text = $"Renderer set to class breaks.";
+                    }
+                    break;
                 default:
                     graphicsOverlay.Renderer = redCircle;
                     operationTimer.Stop();
@@ -539,7 +559,13 @@ namespace NETGraphicsTester
 
             try
             {
-                Renderer renderer = Renderer.FromJson(json);
+                Renderer? renderer = Renderer.FromJson(json);
+                if (renderer == null)
+                {
+                    StatusLabel.Text = "Renderer JSON did not produce a renderer.";
+                    return;
+                }
+
                 graphicsOverlay.Renderer = renderer;
                 StatusLabel.Text = "JSON renderer applied.";
             }
@@ -879,7 +905,16 @@ namespace NETGraphicsTester
 
                 //Symbol multiLayerSym = await styleResults[symbolType].GetSymbolAsync();
                 //Debug.WriteLine($"Found symbol for index {i}: {styleResults[symbolType].Name}");
-                graphic.Symbol = nextUpSymbol;
+
+                try
+                {
+                    graphic.Symbol = nextUpSymbol;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error applying symbol: {ex.Message}");
+                }
+                    
 
             }
 
