@@ -30,7 +30,7 @@
                                                 </x:Array>
                                         </Picker.ItemsSource>
                                 </Picker>
-                                <esriUI:LocalSceneView x:Name="sceneView" Scene="{Binding Scene}" />
+                                <esriUI:SceneView x:Name="sceneView" Scene="{Binding Scene}" />
                                 <Border HorizontalOptions="End"
                                                 VerticalOptions="End"
                                                 Margin="10"

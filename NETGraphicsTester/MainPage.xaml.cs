@@ -92,21 +92,21 @@ namespace NETGraphicsTester
             }
         }
 
-        private void SceneView_WarningsChanged(object? sender, EventArgs e)
-        {
-            if (sender is Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
-            {
-                LogSceneViewWarnings(localSceneView);
-            }
-        }
+        //private void SceneView_WarningsChanged(object? sender, EventArgs e)
+        //{
+        //    if (sender is Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
+        //    {
+        //        LogSceneViewWarnings(localSceneView);
+        //    }
+        //}
 
-        private static void LogSceneViewWarnings(Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
-        {
-            foreach (Exception warning in localSceneView.Warnings)
-            {
-                Debug.WriteLine($"LocalSceneView warning: {warning}");
-            }
-        }
+        //private static void LogSceneViewWarnings(Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
+        //{
+        //    foreach (Exception warning in localSceneView.Warnings)
+        //    {
+        //        Debug.WriteLine($"LocalSceneView warning: {warning}");
+        //    }
+        //}
 
         private async Task InitializeSceneAsync()
         {
@@ -123,9 +123,9 @@ namespace NETGraphicsTester
                         return;
                     }
 
-                     localSceneView.WarningsChanged += SceneView_WarningsChanged;
+                     //localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
-                    var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISTopographic);
+                    var scene = new Scene(SceneViewingMode.Global, BasemapStyle.ArcGISTopographic);
                     var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
 
                     await scene.LoadAsync();
@@ -154,7 +154,7 @@ namespace NETGraphicsTester
                     localSceneView.SetViewpointCamera(camera);
                     localSceneView.DrawStatusChanged += SceneView_DrawStatusChanged;
                     localSceneView.GeoViewTapped += OnSceneViewTapped;
-                     LogSceneViewWarnings(localSceneView);
+                     //LogSceneViewWarnings(localSceneView);
                 }
                 catch (Exception ex)
                 {
