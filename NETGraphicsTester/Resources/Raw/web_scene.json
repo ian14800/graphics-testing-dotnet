@@ -924,7 +924,7 @@
             "id": "1a062e5a515-layer-95",
             "title": "Round1_Point_Symbols3",
             "url": "https://tiles.arcgis.com/tiles/N82JbI5EYtAkuUKU/arcgis/rest/services/Round1_Point_Symbols/SceneServer/layers/0",
-            "visibility": false,
+            "visibility": true,
             "itemId": "8fdff08a5318419f922b8c9e683d641f",
             "layerType": "ArcGISSceneServiceLayer",
             "layerDefinition": {
@@ -943,15 +943,15 @@
                 "drawingInfo": {
                     "renderer": {
                         "authoringInfo": {
-                            "lengthUnit": "kilometers"
+                            "lengthUnit": "inches"
                         },
                         "type": "simple",
                         "visualVariables": [
                             {
                                 "type": "sizeInfo",
-                                "field": "class_value",
+                                "field": "size_value",
                                 "axis": "height",
-                                "valueUnit": "kilometers"
+                                "valueUnit": "inches"
                             },
                             {
                                 "type": "rotationInfo",
@@ -963,16 +963,18 @@
                             "symbolLayers": [
                                 {
                                     "type": "Object",
-                                    "resource": {
-                                        "href": "https://static.arcgis.com/arcgis/styleItems/ThematicTrees/gltf/resource/PrunusArmeniaca.glb"
+                                    "material": {
+                                        "color": [
+                                            133,
+                                            133,
+                                            133
+                                        ]
                                     },
-                                    "height": 9.089999982920872
+                                    "resource": {
+                                        "primitive": "invertedCone"
+                                    }
                                 }
-                            ],
-                            "styleOrigin": {
-                                "styleName": "EsriThematicTreesStyle",
-                                "name": "Prunus"
-                            }
+                            ]
                         }
                     }
                 }
@@ -984,7 +986,7 @@
             "id": "1a062e5b273-layer-96",
             "title": "Round1_Point_Symbols4",
             "url": "https://tiles.arcgis.com/tiles/N82JbI5EYtAkuUKU/arcgis/rest/services/Round1_Point_Symbols/SceneServer/layers/0",
-            "visibility": true,
+            "visibility": false,
             "itemId": "8fdff08a5318419f922b8c9e683d641f",
             "layerType": "ArcGISSceneServiceLayer",
             "layerDefinition": {
@@ -1190,7 +1192,7 @@
         "environment": {
             "lighting": {
                 "type": "sun",
-                "datetime": 1773594087000
+                "datetime": 1773594092000
             },
             "atmosphereEnabled": true,
             "starsEnabled": true,
@@ -1200,7 +1202,7 @@
             }
         },
         "viewpoint": {
-            "scale": 31928.91464820474,
+            "scale": 10548.633168630939,
             "camera": {
                 "position": {
                     "spatialReference": {
@@ -1209,12 +1211,12 @@
                         "vcsWkid": 5773,
                         "latestVcsWkid": 5773
                     },
-                    "x": -8389420.01915814,
-                    "y": 4829207.95287572,
-                    "z": 7551.19902443327
+                    "x": -8391415.70597701,
+                    "y": 4838374.19276365,
+                    "z": 1833.3884704923257
                 },
-                "heading": 358.73772557121674,
-                "tilt": 64.94620478956482
+                "heading": 357.3468831496446,
+                "tilt": 72.0898160921445
             }
         }
     },

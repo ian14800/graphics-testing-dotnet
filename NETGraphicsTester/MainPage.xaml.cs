@@ -123,7 +123,7 @@ namespace NETGraphicsTester
                         return;
                     }
 
-                    localSceneView.WarningsChanged += SceneView_WarningsChanged;
+                     localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
                     var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISTopographic);
                     var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
@@ -137,6 +137,7 @@ namespace NETGraphicsTester
                     if (initialSetup)
                     {
                         graphicsOverlay.Renderer = redCircle;
+
                         graphicsOverlay.SceneProperties.SurfacePlacement = SurfacePlacement.Absolute;
                         graphicsOverlay.SceneProperties.AltitudeOffset = 0;
                         var overlays = localSceneView.GraphicsOverlays;
@@ -153,7 +154,7 @@ namespace NETGraphicsTester
                     localSceneView.SetViewpointCamera(camera);
                     localSceneView.DrawStatusChanged += SceneView_DrawStatusChanged;
                     localSceneView.GeoViewTapped += OnSceneViewTapped;
-                    LogSceneViewWarnings(localSceneView);
+                     LogSceneViewWarnings(localSceneView);
                 }
                 catch (Exception ex)
                 {
@@ -274,19 +275,64 @@ namespace NETGraphicsTester
 
             for (int i = 0; i < count; i++)
             {
-                double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                MapPoint point = new MapPoint(x, y, z, extent.SpatialReference); 
+                int symbolType = random.Next(1, 4);
 
-                Graphic graphic = new Graphic(point);
-                graphic.Attributes["class_value"] = random.Next(ModelClassMin, ModelClassMax + 1);
-                graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                graphic.Attributes["rotation_value"] = random.Next(0, 360 + 1);
-                graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                graphicsOverlay.Graphics.Add(graphic);
-                System.Diagnostics.Debug.WriteLine("Added graphic");
+                switch(symbolType)
+                {
+                    case 1:
+                        double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                        double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                        MapPoint point = new MapPoint(x, y, z, extent.SpatialReference); 
+
+                        Graphic graphic = new Graphic(point);
+                        graphic.Attributes["class_value"] = 1;
+                        graphicsOverlay.Graphics.Add(graphic);
+                        System.Diagnostics.Debug.WriteLine("Added point graphic");
+                        break;
+                    case 2:
+                        double x1 = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y1 = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                        double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                        MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference); 
+                        double x2 = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y2 = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                        double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                        MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference); 
+
+                        Polyline polyline = new Polyline(new MapPoint[] { point1, point2 }); 
+
+                        Graphic graphic_line = new Graphic(polyline);
+                        graphic_line.Attributes["class_value"] = 2;
+                        graphicsOverlay.Graphics.Add(graphic_line);
+                        System.Diagnostics.Debug.WriteLine("Added line graphic");
+                        break;
+                    case 3:
+                        double x1p = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y1p = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                        double z1p = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                        MapPoint pointp1 = new MapPoint(x1p, y1p, z1p, extent.SpatialReference); 
+                        double x2p = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y2p = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                        double z2p = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                        MapPoint pointp2 = new MapPoint(x2p, y2p, z2p, extent.SpatialReference); 
+                        double x3p = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y3p = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                        double z3p = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                        MapPoint pointp3 = new MapPoint(x3p, y3p, z3p, extent.SpatialReference);
+                        double x4p = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y4p = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                        double z4p = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                        MapPoint pointp4 = new MapPoint(x4p, y4p, z4p, extent.SpatialReference);
+
+                        Polygon polygon = new Polygon(new MapPoint[] { pointp1, pointp2, pointp3, pointp4 }); 
+
+                        Graphic graphic_polygon = new Graphic(polygon);
+                        graphic_polygon.Attributes["class_value"] = 3;
+                        graphicsOverlay.Graphics.Add(graphic_polygon);
+                        System.Diagnostics.Debug.WriteLine("Added polygon graphic");
+                        break;
+                }
             }
 
             operationTimer.Stop();
@@ -404,28 +450,43 @@ namespace NETGraphicsTester
                 case 2:
                     try
                     {
-                        UniqueValueRenderer uniqueValueModels = new UniqueValueRenderer();
-                        uniqueValueModels.FieldNames.Add("class_value");
+                        // UniqueValueRenderer uniqueValueModels = new UniqueValueRenderer();
+                        // uniqueValueModels.FieldNames.Add("class_value");
+
+                        // MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1");
+                        // uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 1", "1.glb", modelSymbol1, "1"));
+
+                        // MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2");
+                        // uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 2", "2.glb", modelSymbol2, "2"));
+
+                        // MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3");
+                        // uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 3", "3.glb", modelSymbol3, "3"));
+
+                        // MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4");
+                        // uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 4", "4.glb", modelSymbol4, "4"));
+
+                        // MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5");
+                        // uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 5", "5.glb", modelSymbol5, "5"));
+
+                        // uniqueValueModels.DefaultSymbol = modelSymbol1;
+                        // uniqueValueModels.DefaultLabel = "Default model";
+
+                        // graphicsOverlay.Renderer = uniqueValueModels;
+                        
+                        UniqueValueRenderer multiGeomRen = new UniqueValueRenderer();
+                        multiGeomRen.FieldNames.Add("class_value");
 
                         MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 1", "1.glb", modelSymbol1, "1"));
+                        multiGeomRen.UniqueValues.Add(new UniqueValue("Model 1", "1.glb", modelSymbol1, "1"));
 
-                        MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 2", "2.glb", modelSymbol2, "2"));
+                        SimpleLineSymbol lineSymbol = new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Yellow, 5);
+                        multiGeomRen.UniqueValues.Add(new UniqueValue("Model 2", "2.glb", lineSymbol, "2"));
 
-                        MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 3", "3.glb", modelSymbol3, "3"));
+                        SimpleFillSymbol polygonSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Blue, lineSymbol);
+                        multiGeomRen.UniqueValues.Add(new UniqueValue("Model 3", "3.glb", polygonSymbol, "3"));
 
-                        MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 4", "4.glb", modelSymbol4, "4"));
+                        graphicsOverlay.Renderer = multiGeomRen;
 
-                        MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 5", "5.glb", modelSymbol5, "5"));
-
-                        uniqueValueModels.DefaultSymbol = modelSymbol1;
-                        uniqueValueModels.DefaultLabel = "Default model";
-
-                        graphicsOverlay.Renderer = uniqueValueModels;
                         operationTimer.Stop();
                         if (updateUi)
                         {
