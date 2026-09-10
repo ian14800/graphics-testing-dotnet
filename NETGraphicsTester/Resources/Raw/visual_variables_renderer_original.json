@@ -1,0 +1,94 @@
+{
+  "type": "simple",
+  "symbol": {
+    "type": "PointSymbol3D",
+    "symbolLayers": [
+      {
+        "type": "Object",
+        "resource": {
+          "primitive": "cone"
+        },
+        "material": {
+          "color": [0, 120, 240, 255]
+        },
+        "width": 50,
+        "depth": 50,
+        "height": 100,
+        "anchor": "bottom"
+      }
+    ]
+  },
+  "visualVariables": [
+    {
+      "type": "transparencyInfo",
+      "field": "transparency",
+      "stops": [
+        {
+          "value": 24,
+          "transparency": 70
+        },
+        {
+          "value": 89,
+          "transparency": 30
+        }
+      ]
+    },
+    {
+      "type": "colorInfo",
+      "field": "color",
+      "stops": [
+        {
+          "value": 13,
+          "color": [255, 255, 204, 255]
+        },
+        {
+          "value": 20.25,
+          "color": [255, 237, 160, 255]
+        },
+        {
+          "value": 27.5,
+          "color": [254, 217, 118, 255]
+        },
+        {
+          "value": 34.75,
+          "color": [254, 178, 76, 255]
+        },
+        {
+          "value": 42,
+          "color": [253, 141, 60, 255]
+        },
+        {
+          "value": 49.25,
+          "color": [252, 78, 42, 255]
+        },
+        {
+          "value": 56.5,
+          "color": [227, 26, 28, 255]
+        },
+        {
+          "value": 63.75,
+          "color": [189, 0, 38, 255]
+        },
+        {
+          "value": 71,
+          "color": [128, 0, 38, 255]
+        }
+      ]
+    },
+    {
+      "type": "sizeInfo",
+      "field": "size",
+      "minSize": 50,
+      "maxSize": 400,
+      "minDataValue": 6,
+      "maxDataValue": 84,
+      "axis": "height"
+    },
+    {
+      "type": "rotationInfo",
+      "field": "rotation",
+      "axis": "heading",
+      "rotationType": "geographic"
+    }
+  ]
+}

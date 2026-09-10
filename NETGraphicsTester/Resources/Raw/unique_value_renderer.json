@@ -1,5 +1,5 @@
 {
-
+    "authoringInfo": {},
     "type": "uniqueValue",
     "field1": "class_value",
     "defaultLabel": "Other",
@@ -23,7 +23,7 @@
                                 "resource": {
                                     "primitive": "circle"
                                 },
-                                "size": 7.5,
+                                "size": 14,
                                 "outline": {
                                     "color": [
                                         153,
@@ -46,7 +46,7 @@
                     ]
                 },
                 {
-                    "label": "6",
+                    "label": "4",
                     "symbol": {
                         "type": "PointSymbol3D",
                         "symbolLayers": [
@@ -62,7 +62,7 @@
                                 "resource": {
                                     "primitive": "square"
                                 },
-                                "size": 7.5,
+                                "size": 14,
                                 "outline": {
                                     "color": [
                                         153,
@@ -80,12 +80,12 @@
                     },
                     "values": [
                         [
-                            "6"
+                            "4"
                         ]
                     ]
                 },
                 {
-                    "label": "7",
+                    "label": "5",
                     "symbol": {
                         "type": "PointSymbol3D",
                         "symbolLayers": [
@@ -101,7 +101,7 @@
                                 "resource": {
                                     "primitive": "x"
                                 },
-                                "size": 7.5,
+                                "size": 14,
                                 "outline": {
                                     "color": [
                                         153,
@@ -119,7 +119,7 @@
                     },
                     "values": [
                         [
-                            "7"
+                            "5"
                         ]
                     ]
                 },
@@ -140,7 +140,7 @@
                                 "resource": {
                                     "href": "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Aquarium.svg"
                                 },
-                                "size": 7.5,
+                                "size": 14,
                                 "occludedVisibility": {
                                     "mode": "adaptive"
                                 }
@@ -166,15 +166,15 @@
                                 "type": "Icon",
                                 "material": {
                                     "color": [
-                                        252,
-                                        146,
-                                        31
+                                        240,
+                                        220,
+                                        38
                                     ]
                                 },
                                 "resource": {
                                     "href": "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Landmark.svg"
                                 },
-                                "size": 7.5,
+                                "size": 14,
                                 "occludedVisibility": {
                                     "mode": "adaptive"
                                 }
@@ -188,79 +188,6 @@
                     "values": [
                         [
                             "2"
-                        ]
-                    ]
-                },
-                {
-                    "label": "4",
-                    "symbol": {
-                        "type": "PointSymbol3D",
-                        "symbolLayers": [
-                            {
-                                "type": "Icon",
-                                "material": {
-                                    "color": [
-                                        255,
-                                        222,
-                                        62
-                                    ]
-                                },
-                                "resource": {
-                                    "href": "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Vineyard.svg"
-                                },
-                                "size": 7.5,
-                                "occludedVisibility": {
-                                    "mode": "adaptive"
-                                }
-                            }
-                        ],
-                        "styleOrigin": {
-                            "styleName": "EsriIconsStyle",
-                            "name": "Vineyard"
-                        }
-                    },
-                    "values": [
-                        [
-                            "4"
-                        ]
-                    ]
-                },
-                {
-                    "label": "5",
-                    "symbol": {
-                        "type": "PointSymbol3D",
-                        "symbolLayers": [
-                            {
-                                "type": "Icon",
-                                "material": {
-                                    "color": [
-                                        247,
-                                        137,
-                                        216
-                                    ]
-                                },
-                                "resource": {
-                                    "primitive": "circle"
-                                },
-                                "size": 7.5,
-                                "outline": {
-                                    "color": [
-                                        153,
-                                        153,
-                                        153
-                                    ],
-                                    "transparency": 75,
-                                    "size": 0.75
-                                },
-                                "occludedVisibility": {
-                                    "mode": "adaptive"
-                                }
-                            }
-                        ]
-                    },
-                    "values": [
-                        [
-                            "5"
                         ]
                     ]
                 }
@@ -285,7 +212,7 @@
                         "resource": {
                             "primitive": "circle"
                         },
-                        "size": 7.5,
+                        "size": 14,
                         "outline": {
                             "color": [
                                 153,
@@ -304,7 +231,7 @@
             "value": "3"
         },
         {
-            "label": "6",
+            "label": "4",
             "symbol": {
                 "type": "PointSymbol3D",
                 "symbolLayers": [
@@ -320,7 +247,7 @@
                         "resource": {
                             "primitive": "square"
                         },
-                        "size": 7.5,
+                        "size": 14,
                         "outline": {
                             "color": [
                                 153,
@@ -336,10 +263,10 @@
                     }
                 ]
             },
-            "value": "6"
+            "value": "4"
         },
         {
-            "label": "7",
+            "label": "5",
             "symbol": {
                 "type": "PointSymbol3D",
                 "symbolLayers": [
@@ -355,7 +282,7 @@
                         "resource": {
                             "primitive": "x"
                         },
-                        "size": 7.5,
+                        "size": 14,
                         "outline": {
                             "color": [
                                 153,
@@ -371,7 +298,7 @@
                     }
                 ]
             },
-            "value": "7"
+            "value": "5"
         },
         {
             "label": "1",
@@ -390,7 +317,7 @@
                         "resource": {
                             "href": "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Aquarium.svg"
                         },
-                        "size": 7.5,
+                        "size": 14,
                         "occludedVisibility": {
                             "mode": "adaptive"
                         }
@@ -412,15 +339,15 @@
                         "type": "Icon",
                         "material": {
                             "color": [
-                                252,
-                                146,
-                                31
+                                240,
+                                220,
+                                38
                             ]
                         },
                         "resource": {
                             "href": "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Landmark.svg"
                         },
-                        "size": 7.5,
+                        "size": 14,
                         "occludedVisibility": {
                             "mode": "adaptive"
                         }
@@ -432,71 +359,6 @@
                 }
             },
             "value": "2"
-        },
-        {
-            "label": "4",
-            "symbol": {
-                "type": "PointSymbol3D",
-                "symbolLayers": [
-                    {
-                        "type": "Icon",
-                        "material": {
-                            "color": [
-                                255,
-                                222,
-                                62
-                            ]
-                        },
-                        "resource": {
-                            "href": "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Vineyard.svg"
-                        },
-                        "size": 7.5,
-                        "occludedVisibility": {
-                            "mode": "adaptive"
-                        }
-                    }
-                ],
-                "styleOrigin": {
-                    "styleName": "EsriIconsStyle",
-                    "name": "Vineyard"
-                }
-            },
-            "value": "4"
-        },
-        {
-            "label": "5",
-            "symbol": {
-                "type": "PointSymbol3D",
-                "symbolLayers": [
-                    {
-                        "type": "Icon",
-                        "material": {
-                            "color": [
-                                247,
-                                137,
-                                216
-                            ]
-                        },
-                        "resource": {
-                            "primitive": "circle"
-                        },
-                        "size": 7.5,
-                        "outline": {
-                            "color": [
-                                153,
-                                153,
-                                153
-                            ],
-                            "transparency": 75,
-                            "size": 0.75
-                        },
-                        "occludedVisibility": {
-                            "mode": "adaptive"
-                        }
-                    }
-                ]
-            },
-            "value": "5"
         }
     ]
 }

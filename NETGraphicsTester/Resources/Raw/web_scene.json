@@ -24,7 +24,7 @@
                     "renderer": {
                         "authoringInfo": {},
                         "type": "uniqueValue",
-                        "field1": "class_value",
+                        "field1": "Symbol",
                         "defaultLabel": "Other",
                         "uniqueValueGroups": [
                             {
@@ -69,7 +69,7 @@
                                         ]
                                     },
                                     {
-                                        "label": "6",
+                                        "label": "4",
                                         "symbol": {
                                             "type": "PointSymbol3D",
                                             "symbolLayers": [
@@ -108,7 +108,7 @@
                                         ]
                                     },
                                     {
-                                        "label": "7",
+                                        "label": "5",
                                         "symbol": {
                                             "type": "PointSymbol3D",
                                             "symbolLayers": [
@@ -189,9 +189,9 @@
                                                     "type": "Icon",
                                                     "material": {
                                                         "color": [
-                                                            252,
-                                                            146,
-                                                            31
+                                                            240,
+                                                            220,
+                                                            38
                                                         ]
                                                     },
                                                     "resource": {
@@ -211,79 +211,6 @@
                                         "values": [
                                             [
                                                 "2"
-                                            ]
-                                        ]
-                                    },
-                                    {
-                                        "label": "4",
-                                        "symbol": {
-                                            "type": "PointSymbol3D",
-                                            "symbolLayers": [
-                                                {
-                                                    "type": "Icon",
-                                                    "material": {
-                                                        "color": [
-                                                            255,
-                                                            222,
-                                                            62
-                                                        ]
-                                                    },
-                                                    "resource": {
-                                                        "href": "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Vineyard.svg"
-                                                    },
-                                                    "size": 7.5,
-                                                    "occludedVisibility": {
-                                                        "mode": "adaptive"
-                                                    }
-                                                }
-                                            ],
-                                            "styleOrigin": {
-                                                "styleName": "EsriIconsStyle",
-                                                "name": "Vineyard"
-                                            }
-                                        },
-                                        "values": [
-                                            [
-                                                "4"
-                                            ]
-                                        ]
-                                    },
-                                    {
-                                        "label": "5",
-                                        "symbol": {
-                                            "type": "PointSymbol3D",
-                                            "symbolLayers": [
-                                                {
-                                                    "type": "Icon",
-                                                    "material": {
-                                                        "color": [
-                                                            247,
-                                                            137,
-                                                            216
-                                                        ]
-                                                    },
-                                                    "resource": {
-                                                        "primitive": "circle"
-                                                    },
-                                                    "size": 7.5,
-                                                    "outline": {
-                                                        "color": [
-                                                            153,
-                                                            153,
-                                                            153
-                                                        ],
-                                                        "transparency": 75,
-                                                        "size": 0.75
-                                                    },
-                                                    "occludedVisibility": {
-                                                        "mode": "adaptive"
-                                                    }
-                                                }
-                                            ]
-                                        },
-                                        "values": [
-                                            [
-                                                "5"
                                             ]
                                         ]
                                     }
@@ -327,7 +254,7 @@
                                 "value": "3"
                             },
                             {
-                                "label": "6",
+                                "label": "4",
                                 "symbol": {
                                     "type": "PointSymbol3D",
                                     "symbolLayers": [
@@ -362,7 +289,7 @@
                                 "value": "6"
                             },
                             {
-                                "label": "7",
+                                "label": "5",
                                 "symbol": {
                                     "type": "PointSymbol3D",
                                     "symbolLayers": [
@@ -435,9 +362,9 @@
                                             "type": "Icon",
                                             "material": {
                                                 "color": [
-                                                    252,
-                                                    146,
-                                                    31
+                                                    240,
+                                                    220,
+                                                    38
                                                 ]
                                             },
                                             "resource": {
@@ -455,71 +382,6 @@
                                     }
                                 },
                                 "value": "2"
-                            },
-                            {
-                                "label": "4",
-                                "symbol": {
-                                    "type": "PointSymbol3D",
-                                    "symbolLayers": [
-                                        {
-                                            "type": "Icon",
-                                            "material": {
-                                                "color": [
-                                                    255,
-                                                    222,
-                                                    62
-                                                ]
-                                            },
-                                            "resource": {
-                                                "href": "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/Vineyard.svg"
-                                            },
-                                            "size": 7.5,
-                                            "occludedVisibility": {
-                                                "mode": "adaptive"
-                                            }
-                                        }
-                                    ],
-                                    "styleOrigin": {
-                                        "styleName": "EsriIconsStyle",
-                                        "name": "Vineyard"
-                                    }
-                                },
-                                "value": "4"
-                            },
-                            {
-                                "label": "5",
-                                "symbol": {
-                                    "type": "PointSymbol3D",
-                                    "symbolLayers": [
-                                        {
-                                            "type": "Icon",
-                                            "material": {
-                                                "color": [
-                                                    247,
-                                                    137,
-                                                    216
-                                                ]
-                                            },
-                                            "resource": {
-                                                "primitive": "circle"
-                                            },
-                                            "size": 7.5,
-                                            "outline": {
-                                                "color": [
-                                                    153,
-                                                    153,
-                                                    153
-                                                ],
-                                                "transparency": 75,
-                                                "size": 0.75
-                                            },
-                                            "occludedVisibility": {
-                                                "mode": "adaptive"
-                                            }
-                                        }
-                                    ]
-                                },
-                                "value": "5"
                             }
                         ]
                     }
@@ -554,7 +416,7 @@
                             "lengthUnit": "feet"
                         },
                         "type": "uniqueValue",
-                        "field1": "class_value",
+                        "field1": "Symbol",
                         "defaultLabel": "Other",
                         "uniqueValueGroups": [
                             {
@@ -924,7 +786,7 @@
             "id": "1a062e5a515-layer-95",
             "title": "Round1_Point_Symbols3",
             "url": "https://tiles.arcgis.com/tiles/N82JbI5EYtAkuUKU/arcgis/rest/services/Round1_Point_Symbols/SceneServer/layers/0",
-            "visibility": false,
+            "visibility": true,
             "itemId": "8fdff08a5318419f922b8c9e683d641f",
             "layerType": "ArcGISSceneServiceLayer",
             "layerDefinition": {
@@ -941,50 +803,97 @@
                     "unit": "meter"
                 },
                 "drawingInfo": {
-                    "renderer": {
-                        "authoringInfo": {
-                            "lengthUnit": "kilometers"
-                        },
-                        "type": "simple",
-                        "visualVariables": [
-                            {
-                                "type": "sizeInfo",
-                                "field": "class_value",
-                                "axis": "height",
-                                "valueUnit": "kilometers"
+                    "labelingInfo": [
+                        {
+                            "labelExpression": "[CNTRY_NAME]",
+                            "labelExpressionInfo": {
+                                "expression": "$feature[\"CNTRY_NAME\"]"
                             },
-                            {
-                                "type": "rotationInfo",
-                                "field": "POP"
-                            }
-                        ],
+                            "labelPlacement": "esriServerPointLabelPlacementAboveLeft",
+                            "symbol": {
+                                "type": "LabelSymbol3D",
+                                "symbolLayers": [
+                                    {
+                                        "type": "Text",
+                                        "halo": {
+                                            "color": [
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "transparency": 50,
+                                            "size": 1
+                                        },
+                                        "material": {
+                                            "color": [
+                                                255,
+                                                255,
+                                                255
+                                            ]
+                                        },
+                                        "size": 11,
+                                        "occludedVisibility": {
+                                            "mode": "adaptive"
+                                        }
+                                    }
+                                ]
+                            },
+                            "useCodedValues": true
+                        }
+                    ],
+                    "renderer": {
+                        "authoringInfo": {},
+                        "type": "simple",
                         "symbol": {
                             "type": "PointSymbol3D",
                             "symbolLayers": [
                                 {
-                                    "type": "Object",
-                                    "resource": {
-                                        "href": "https://static.arcgis.com/arcgis/styleItems/ThematicTrees/gltf/resource/PrunusArmeniaca.glb"
+                                    "type": "Icon",
+                                    "material": {
+                                        "color": [
+                                            77,
+                                            77,
+                                            77
+                                        ]
                                     },
-                                    "height": 9.089999982920872
+                                    "resource": {
+                                        "href": "https://static.arcgis.com/arcgis/styleItems/Icons/web/resource/LiveMusicVenue.svg"
+                                    },
+                                    "size": 15,
+                                    "occludedVisibility": {
+                                        "mode": "adaptive"
+                                    }
                                 }
                             ],
                             "styleOrigin": {
-                                "styleName": "EsriThematicTreesStyle",
-                                "name": "Prunus"
+                                "styleName": "EsriIconsStyle",
+                                "name": "Live Music Venue"
+                            },
+                            "verticalOffset": {
+                                "screenLength": 20,
+                                "maxWorldLength": 200
+                            },
+                            "callout": {
+                                "type": "line",
+                                "color": [
+                                    0,
+                                    0,
+                                    0
+                                ],
+                                "size": 0.75
                             }
                         }
                     }
                 }
             },
-            "showLabels": false,
+            "showLabels": true,
             "screenSizePerspective": true
         },
         {
             "id": "1a062e5b273-layer-96",
             "title": "Round1_Point_Symbols4",
             "url": "https://tiles.arcgis.com/tiles/N82JbI5EYtAkuUKU/arcgis/rest/services/Round1_Point_Symbols/SceneServer/layers/0",
-            "visibility": true,
+            "visibility": false,
             "itemId": "8fdff08a5318419f922b8c9e683d641f",
             "layerType": "ArcGISSceneServiceLayer",
             "layerDefinition": {
@@ -1006,14 +915,14 @@
                             "type": "univariateColorSize",
                             "visualVariables": [
                                 {
-                                    "field": "class_value",
+                                    "field": "Symbol",
                                     "maxSliderValue": 7,
                                     "minSliderValue": 1,
                                     "theme": "high-to-low",
                                     "type": "colorInfo"
                                 },
                                 {
-                                    "field": "class_value",
+                                    "field": "Symbol",
                                     "maxSliderValue": 7,
                                     "minSliderValue": 1,
                                     "theme": "high-to-low",
@@ -1025,7 +934,7 @@
                         "visualVariables": [
                             {
                                 "type": "colorInfo",
-                                "field": "class_value",
+                                "field": "Symbol",
                                 "stops": [
                                     {
                                         "color": [
@@ -1079,7 +988,7 @@
                             },
                             {
                                 "type": "sizeInfo",
-                                "field": "class_value",
+                                "field": "Symbol",
                                 "axis": "height",
                                 "maxDataValue": 7,
                                 "maxSize": 30,
@@ -1123,7 +1032,7 @@
                                 }
                             }
                         ],
-                        "field": "class_value",
+                        "field": "Symbol",
                         "minValue": -1.7976931348623157e+308
                     }
                 }
@@ -1190,7 +1099,7 @@
         "environment": {
             "lighting": {
                 "type": "sun",
-                "datetime": 1773594087000
+                "datetime": 1773594092000
             },
             "atmosphereEnabled": true,
             "starsEnabled": true,
@@ -1200,7 +1109,7 @@
             }
         },
         "viewpoint": {
-            "scale": 31928.91464820474,
+            "scale": 12038.587306688618,
             "camera": {
                 "position": {
                     "spatialReference": {
@@ -1209,12 +1118,12 @@
                         "vcsWkid": 5773,
                         "latestVcsWkid": 5773
                     },
-                    "x": -8389420.01915814,
-                    "y": 4829207.95287572,
-                    "z": 7551.19902443327
+                    "x": -8391566.515301017,
+                    "y": 4840153.1491468195,
+                    "z": 718.5470370082185
                 },
-                "heading": 358.73772557121674,
-                "tilt": 64.94620478956482
+                "heading": 3.59654224896612,
+                "tilt": 84.12963576934152
             }
         }
     },

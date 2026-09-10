@@ -1,0 +1,31 @@
+{
+  "type": "CIMLineSymbol",
+  "symbolLayers": [
+    {
+      "type": "CIMSolidStroke",
+      "effects": [
+        {
+          "type": "CIMGeometricEffectWave",
+          "amplitude": 3,
+          "period": 5,
+          "seed": 1,
+          "waveform": "Sinus"
+        }
+      ],
+      "enable": true,
+      "capStyle": "Round",
+      "joinStyle": "Round",
+      "lineStyle3D": "Strip",
+      "miterLimit": 10,
+      "width": 1,
+      "height3D": 1,
+      "anchor3D": "Center",
+      "color": [
+        51,
+        51,
+        51,
+        255
+      ]
+    }
+  ]
+}

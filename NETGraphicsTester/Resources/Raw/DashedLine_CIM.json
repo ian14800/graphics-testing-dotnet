@@ -1,0 +1,28 @@
+{
+  "type": "CIMLineSymbol",
+  "effects": [
+    { "type": "CIMGeometricEffectAddControlPoints", "angleTolerance": 120 }
+  ],
+  "symbolLayers": [
+    {
+      "type": "CIMSolidStroke",
+      "effects": [
+        {
+          "type": "CIMGeometricEffectDashes",
+          "dashTemplate": [6, 2, 2, 2],
+          "lineDashEnding": "HalfPattern",
+          "controlPointEnding": "HalfPattern"
+        }
+      ],
+      "enable": true,
+      "capStyle": "Butt",
+      "joinStyle": "Round",
+      "lineStyle3D": "Strip",
+      "miterLimit": 10,
+      "width": 0.40000000000000002,
+      "height3D": 1,
+      "anchor3D": "Center",
+      "color": [0, 0, 0, 255]
+    }
+  ]
+}

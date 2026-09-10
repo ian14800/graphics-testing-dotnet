@@ -1,42 +1,125 @@
 {
-    "type": "classBreaks",
-    "classBreakInfos": [
-        {
-            "classMaxValue": 1,
-            "label": "1",
-            "symbol": { "type": "simple-marker", "style": "circle", "color": [239, 243, 255, 255], "size": 9, "outline": { "color": [255, 255, 255, 64], "width": 0.75 } }
-        },
-        {
-            "classMaxValue": 2,
-            "label": "2",
-            "symbol": { "type": "simple-marker", "style": "circle", "color": [217, 231, 245, 255], "size": 12, "outline": { "color": [255, 255, 255, 64], "width": 0.75 } }
-        },
-        {
-            "classMaxValue": 3,
-            "label": "3",
-            "symbol": { "type": "simple-marker", "style": "circle", "color": [189, 215, 231, 255], "size": 15, "outline": { "color": [255, 255, 255, 64], "width": 0.75 } }
-        },
-        {
-            "classMaxValue": 4,
-            "label": "4",
-            "symbol": { "type": "simple-marker", "style": "circle", "color": [107, 174, 214, 255], "size": 18, "outline": { "color": [255, 255, 255, 64], "width": 0.75 } }
-        },
-        {
-            "classMaxValue": 5,
-            "label": "5",
-            "symbol": { "type": "simple-marker", "style": "circle", "color": [49, 130, 189, 255], "size": 21, "outline": { "color": [255, 255, 255, 64], "width": 0.75 } }
-        },
-        {
-            "classMaxValue": 6,
-            "label": "6",
-            "symbol": { "type": "simple-marker", "style": "circle", "color": [24, 100, 170, 255], "size": 24, "outline": { "color": [255, 255, 255, 64], "width": 0.75 } }
-        },
-        {
-            "classMaxValue": 1.7976931348623157e+308,
-            "label": "7 and above",
-            "symbol": { "type": "simple-marker", "style": "circle", "color": [8, 81, 156, 255], "size": 30, "outline": { "color": [255, 255, 255, 64], "width": 0.75 } }
-        }
-    ],
-    "field": "class_value",
-    "minValue": 0
-}
+                        "authoringInfo": {
+                            "type": "univariateColorSize",
+                            "visualVariables": [
+                                {
+                                    "field": "class_value",
+                                    "maxSliderValue": 7,
+                                    "minSliderValue": 1,
+                                    "theme": "high-to-low",
+                                    "type": "colorInfo"
+                                },
+                                {
+                                    "field": "class_value",
+                                    "maxSliderValue": 7,
+                                    "minSliderValue": 1,
+                                    "theme": "high-to-low",
+                                    "type": "sizeInfo"
+                                }
+                            ]
+                        },
+                        "type": "classBreaks",
+                        "visualVariables": [
+                            {
+                                "type": "colorInfo",
+                                "field": "class_value",
+                                "stops": [
+                                    {
+                                        "color": [
+                                            239,
+                                            243,
+                                            255,
+                                            255
+                                        ],
+                                        "label": "< 1",
+                                        "value": 1
+                                    },
+                                    {
+                                        "color": [
+                                            189,
+                                            215,
+                                            231,
+                                            255
+                                        ],
+                                        "value": 2.5
+                                    },
+                                    {
+                                        "color": [
+                                            107,
+                                            174,
+                                            214,
+                                            255
+                                        ],
+                                        "label": "4",
+                                        "value": 4
+                                    },
+                                    {
+                                        "color": [
+                                            49,
+                                            130,
+                                            189,
+                                            255
+                                        ],
+                                        "value": 5.5
+                                    },
+                                    {
+                                        "color": [
+                                            8,
+                                            81,
+                                            156,
+                                            255
+                                        ],
+                                        "label": "> 7",
+                                        "value": 7
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sizeInfo",
+                                "field": "Symbol",
+                                "axis": "height",
+                                "maxDataValue": 7,
+                                "maxSize": 30,
+                                "minDataValue": 1,
+                                "minSize": 3
+                            }
+                        ],
+                        "classBreakInfos": [
+                            {
+                                "classMaxValue": 1.7976931348623157e+308,
+                                "symbol": {
+                                    "type": "PointSymbol3D",
+                                    "symbolLayers": [
+                                        {
+                                            "type": "Icon",
+                                            "material": {
+                                                "color": [
+                                                    227,
+                                                    139,
+                                                    79
+                                                ]
+                                            },
+                                            "resource": {
+                                                "primitive": "circle"
+                                            },
+                                            "size": 9,
+                                            "outline": {
+                                                "color": [
+                                                    255,
+                                                    255,
+                                                    255
+                                                ],
+                                                "transparency": 75,
+                                                "size": 0.75
+                                            },
+                                            "occludedVisibility": {
+                                                "mode": "adaptive"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "field": "Symbol",
+                        "minValue": -1.7976931348623157e+308
+                    }

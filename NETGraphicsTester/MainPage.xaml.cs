@@ -38,7 +38,7 @@ namespace NETGraphicsTester
         Graphic? currentlyIdentifiedGraphic;
 
         private const int ModelClassMin = 1;
-        private const int ModelClassMax = 9;
+        private const int ModelClassMax = 7;
         private string currentScene = "Blank";
         private bool initialSetup = true;
 
@@ -92,21 +92,21 @@ namespace NETGraphicsTester
             }
         }
 
-        private void SceneView_WarningsChanged(object? sender, EventArgs e)
-        {
-            if (sender is Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
-            {
-                LogSceneViewWarnings(localSceneView);
-            }
-        }
+        //private void SceneView_WarningsChanged(object? sender, EventArgs e)
+        //{
+        //    if (sender is Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
+        //    {
+        //        LogSceneViewWarnings(localSceneView);
+        //    }
+        //}
 
-        private static void LogSceneViewWarnings(Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
-        {
-            foreach (Exception warning in localSceneView.Warnings)
-            {
-                Debug.WriteLine($"LocalSceneView warning: {warning}");
-            }
-        }
+        //private static void LogSceneViewWarnings(Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
+        //{
+        //    foreach (Exception warning in localSceneView.Warnings)
+        //    {
+        //        Debug.WriteLine($"LocalSceneView warning: {warning}");
+        //    }
+        //}
 
         private async Task InitializeSceneAsync()
         {
@@ -123,9 +123,9 @@ namespace NETGraphicsTester
                         return;
                     }
 
-                    localSceneView.WarningsChanged += SceneView_WarningsChanged;
+                    //localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
-                    var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISTopographic);
+                    var scene = new Scene(SceneViewingMode.Local, SpatialReferences.Wgs84);
                     var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
 
                     await scene.LoadAsync();
@@ -150,10 +150,33 @@ namespace NETGraphicsTester
                         initialSetup = false;
                     }
 
+                    string PointSceneLayerUri = "https://services5.arcgis.com/N82JbI5EYtAkuUKU/arcgis/rest/services/FutureCityPoints_partialNull/SceneServer/0";
+                    ArcGISSceneLayer pointSceneLayer = new ArcGISSceneLayer(new Uri(PointSceneLayerUri));
+
+                    await pointSceneLayer.LoadAsync();
+                    if (pointSceneLayer.LoadStatus != Esri.ArcGISRuntime.LoadStatus.Loaded)
+                    {
+                        Debug.WriteLine($"Point scene layer did not load: {pointSceneLayer.LoadStatus}");
+                        return;
+                    }
+
+                    localSceneView.Scene.OperationalLayers.Add(pointSceneLayer);
+                    Debug.WriteLine("Point scene layer added to operational layers.");
+
+                    if (pointSceneLayer.Renderer?.SceneProperties is RendererSceneProperties sceneProperties)
+                    {
+                        sceneProperties.PitchExpression = "45";
+                        Debug.WriteLine("Roll expression set to 45 for point scene layer.");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Point scene layer has no renderer scene properties; roll expression was not set.");
+                    }
+
                     localSceneView.SetViewpointCamera(camera);
                     localSceneView.DrawStatusChanged += SceneView_DrawStatusChanged;
                     localSceneView.GeoViewTapped += OnSceneViewTapped;
-                    LogSceneViewWarnings(localSceneView);
+                    //LogSceneViewWarnings(localSceneView);
                 }
                 catch (Exception ex)
                 {
@@ -487,7 +510,7 @@ namespace NETGraphicsTester
                     }
                     break;
                 case 4:
-                    string symbolFilePath = "D:\\ProjectData\\Testing\\MinShipSymbols_round1_points.stylx";
+                    string symbolFilePath = "MinShipSymbols_round1_points.stylx";
                     SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
 
                     SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
@@ -572,6 +595,43 @@ namespace NETGraphicsTester
             catch (Exception ex)
             {
                 StatusLabel.Text = $"Invalid renderer JSON: {ex.Message}";
+            }
+        }
+
+        private void OnApplyJsonSymbolClicked(object sender, EventArgs e)
+        {
+            string json = (SymbolJsonEditor.Text ?? string.Empty).Trim().Trim('"', '\'');
+            int count = GetRequestedCount();
+            if (count <= 0)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                StatusLabel.Text = "Enter symbol JSON.";
+                return;
+            }
+
+            try
+            {
+                Symbol? symbol = Symbol.FromJson(json);
+
+                if (symbol == null)
+                {
+                    StatusLabel.Text = "Symbol JSON did not produce a symbol.";
+                    return;
+                }
+
+                for (int i = 0; i < count; i++)
+                {
+                    graphicsOverlay.Graphics[i].Symbol = symbol;
+                }
+                StatusLabel.Text = "JSON symbol applied";
+            }
+            catch (Exception ex)
+            {
+                StatusLabel.Text = $"Invalid symbol JSON: {ex.Message}";
             }
         }
 
@@ -822,7 +882,7 @@ namespace NETGraphicsTester
                 drawClock.Start();
             }
 
-            string symbolFilePath = "D:\\ProjectData\\Testing\\MinShipSymbols_round2_points.stylx";
+            string symbolFilePath = "MinShipSymbols_round2_points.stylx";
             SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
 
             SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();

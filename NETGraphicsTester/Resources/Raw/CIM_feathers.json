@@ -1,0 +1,273 @@
+{
+  "type": "CIMPointSymbol",
+  "symbolLayers": [
+    {
+      "type": "CIMVectorMarker",
+      "effects": [
+        {
+          "type": "CIMGeometricEffectLocalizerFeather",
+          "style": "Complete",
+          "length": 50,
+          "width": 15
+        }
+      ],
+      "enable": true,
+      "name": "New_46bd326f-4f2e-4a27-a5a0-adb30bfa36b7",
+      "anchorPointUnits": "Relative",
+      "dominantSizeAxis3D": "Y",
+      "size": 25,
+      "billboardMode3D": "FaceNearPlane",
+      "markerPlacement": {
+        "type": "CIMMarkerPlacementInsidePolygon",
+        "gridType": "Fixed",
+        "randomness": 100,
+        "seed": 826360,
+        "stepX": 12,
+        "stepY": 12,
+        "clipping": "ClipAtBoundary"
+      },
+      "frame": { "xmin": -8.66, "ymin": -5.0, "xmax": 8.66, "ymax": 5.0 },
+      "markerGraphics": [
+        {
+          "type": "CIMMarkerGraphic",
+          "geometry": {
+            "rings": [
+              [
+                [-5.77, 5.0],
+                [5.77, 5.0],
+                [8.66, 0.0],
+                [5.77, -5.0],
+                [-5.77, -5.0],
+                [-8.66, 0.0],
+                [-5.77, 5.0]
+              ]
+            ]
+          },
+          "symbol": {
+            "type": "CIMPolygonSymbol",
+            "symbolLayers": [
+              {
+                "type": "CIMSolidFill",
+                "enable": true,
+                "name": "New_6b30a348-93ad-4d0f-9f90-caffc8e2fe8a",
+                "color": [232, 190, 255, 255]
+              }
+            ],
+            "angleAlignment": "Map"
+          }
+        }
+      ],
+      "scaleSymbolsProportionally": true,
+      "respectFrame": true
+    },
+    {
+      "type": "CIMVectorMarker",
+      "effects": [
+        {
+          "type": "CIMGeometricEffectLocalizerFeather",
+          "style": "Complete",
+          "length": 50,
+          "width": 30,
+          "angle": 270
+        }
+      ],
+      "enable": true,
+      "name": "New_071e662b-316b-40dd-a491-bf3738f9c3a6",
+      "anchorPointUnits": "Relative",
+      "dominantSizeAxis3D": "Y",
+      "size": 25,
+      "billboardMode3D": "FaceNearPlane",
+      "markerPlacement": {
+        "type": "CIMMarkerPlacementInsidePolygon",
+        "gridType": "Fixed",
+        "randomness": 100,
+        "seed": 475098,
+        "stepX": 12,
+        "stepY": 12,
+        "clipping": "ClipAtBoundary"
+      },
+      "frame": { "xmin": -8.66, "ymin": -5.0, "xmax": 8.66, "ymax": 5.0 },
+      "markerGraphics": [
+        {
+          "type": "CIMMarkerGraphic",
+          "geometry": {
+            "rings": [
+              [
+                [-5.77, 5.0],
+                [5.77, 5.0],
+                [8.66, 0.0],
+                [5.77, -5.0],
+                [-5.77, -5.0],
+                [-8.66, 0.0],
+                [-5.77, 5.0]
+              ]
+            ]
+          },
+          "symbol": {
+            "type": "CIMPolygonSymbol",
+            "symbolLayers": [
+              {
+                "type": "CIMSolidFill",
+                "enable": true,
+                "name": "New_6b30a348-93ad-4d0f-9f90-caffc8e2fe8a",
+                "color": [190, 210, 255, 255]
+              }
+            ],
+            "angleAlignment": "Map"
+          }
+        }
+      ],
+      "scaleSymbolsProportionally": true,
+      "respectFrame": true
+    },
+    {
+      "type": "CIMVectorMarker",
+      "effects": [
+        {
+          "type": "CIMGeometricEffectLocalizerFeather",
+          "style": "Complete",
+          "length": 50,
+          "width": 15,
+          "angle": 180
+        }
+      ],
+      "enable": true,
+      "name": "New_3d1b094d-ed21-4be9-a110-dca8caf20afb",
+      "anchorPointUnits": "Relative",
+      "dominantSizeAxis3D": "Y",
+      "size": 25,
+      "billboardMode3D": "FaceNearPlane",
+      "markerPlacement": {
+        "type": "CIMMarkerPlacementInsidePolygon",
+        "gridType": "Fixed",
+        "randomness": 100,
+        "seed": 571589,
+        "stepX": 12,
+        "stepY": 12,
+        "clipping": "ClipAtBoundary"
+      },
+      "frame": { "xmin": -8.66, "ymin": -5.0, "xmax": 8.66, "ymax": 5.0 },
+      "markerGraphics": [
+        {
+          "type": "CIMMarkerGraphic",
+          "geometry": {
+            "rings": [
+              [
+                [-5.77, 5.0],
+                [5.77, 5.0],
+                [8.66, 0.0],
+                [5.77, -5.0],
+                [-5.77, -5.0],
+                [-8.66, 0.0],
+                [-5.77, 5.0]
+              ]
+            ]
+          },
+          "symbol": {
+            "type": "CIMPolygonSymbol",
+            "symbolLayers": [
+              {
+                "type": "CIMSolidStroke",
+                "enable": true,
+                "name": "New_fe915c34-b020-42cd-b0c6-45987b2ce103",
+                "capStyle": "Round",
+                "joinStyle": "Round",
+                "lineStyle3D": "Strip",
+                "miterLimit": 4,
+                "width": 0,
+                "height3D": 1,
+                "anchor3D": "Center",
+                "color": [255, 190, 232, 0]
+              },
+              {
+                "type": "CIMSolidFill",
+                "enable": true,
+                "name": "New_6b30a348-93ad-4d0f-9f90-caffc8e2fe8a",
+                "color": [178, 178, 178, 255]
+              }
+            ],
+            "angleAlignment": "Map"
+          }
+        }
+      ],
+      "scaleSymbolsProportionally": true,
+      "respectFrame": true
+    },
+    {
+      "type": "CIMVectorMarker",
+      "effects": [
+        {
+          "type": "CIMGeometricEffectLocalizerFeather",
+          "style": "Complete",
+          "length": 50,
+          "width": 30,
+          "angle": 90
+        }
+      ],
+      "enable": true,
+      "name": "New_1f13dac2-118b-499e-bd2f-d11e9a870311",
+      "anchorPointUnits": "Relative",
+      "dominantSizeAxis3D": "Y",
+      "size": 25,
+      "billboardMode3D": "FaceNearPlane",
+      "markerPlacement": {
+        "type": "CIMMarkerPlacementInsidePolygon",
+        "gridType": "Fixed",
+        "randomness": 100,
+        "seed": 571589,
+        "stepX": 12,
+        "stepY": 12,
+        "clipping": "ClipAtBoundary"
+      },
+      "frame": { "xmin": -8.66, "ymin": -5.0, "xmax": 8.66, "ymax": 5.0 },
+      "markerGraphics": [
+        {
+          "type": "CIMMarkerGraphic",
+          "geometry": {
+            "rings": [
+              [
+                [-5.77, 5.0],
+                [5.77, 5.0],
+                [8.66, 0.0],
+                [5.77, -5.0],
+                [-5.77, -5.0],
+                [-8.66, 0.0],
+                [-5.77, 5.0]
+              ]
+            ]
+          },
+          "symbol": {
+            "type": "CIMPolygonSymbol",
+            "symbolLayers": [
+              {
+                "type": "CIMSolidStroke",
+                "enable": true,
+                "name": "New_fe915c34-b020-42cd-b0c6-45987b2ce103",
+                "capStyle": "Round",
+                "joinStyle": "Round",
+                "lineStyle3D": "Strip",
+                "miterLimit": 4,
+                "width": 0,
+                "height3D": 1,
+                "anchor3D": "Center",
+                "color": [255, 190, 232, 0]
+              },
+              {
+                "type": "CIMSolidFill",
+                "enable": true,
+                "name": "New_6b30a348-93ad-4d0f-9f90-caffc8e2fe8a",
+                "color": [255, 235, 175, 255]
+              }
+            ],
+            "angleAlignment": "Map"
+          }
+        }
+      ],
+      "scaleSymbolsProportionally": true,
+      "respectFrame": true
+    }
+  ],
+  "haloSize": 0.15384615384615385,
+  "scaleX": 1,
+  "angleAlignment": "Display"
+}
