@@ -304,10 +304,15 @@ namespace NETGraphicsTester
 
                 Graphic graphic = new Graphic(point);
                 graphic.Attributes["class_value"] = random.Next(ModelClassMin, ModelClassMax + 1);
-                graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                graphic.Attributes["rotation_value"] = random.Next(0, 360 + 1);
-                graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                //graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                //graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                //graphic.Attributes["rotation_value"] = random.Next(0, 360 + 1);
+                //graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+
+                graphic.Attributes["size_value"] = null;
+                graphic.Attributes["transparency_value"] = null;
+                graphic.Attributes["rotation_value"] = null;
+                graphic.Attributes["color_value"] = null;
                 graphicsOverlay.Graphics.Add(graphic);
                 System.Diagnostics.Debug.WriteLine("Added graphic");
             }
@@ -1340,14 +1345,51 @@ namespace NETGraphicsTester
             return string.Empty;
         }
 
+        private static int GetAttributeInt(Graphic graphic, string attributeKey, int defaultValue = 0)
+        {
+            if (graphic.Attributes.TryGetValue(attributeKey, out object? value) && value != null)
+            {
+                switch (value)
+                {
+                    case int intValue:
+                        return intValue;
+                    case long longValue:
+                        return checked((int)longValue);
+                    case string stringValue when int.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed):
+                        return parsed;
+                    case IConvertible convertible:
+                        try
+                        {
+                            return convertible.ToInt32(CultureInfo.InvariantCulture);
+                        }
+                        catch (Exception)
+                        {
+                            return defaultValue;
+                        }
+                }
+            }
+
+            return defaultValue;
+        }
+
+        private static int ParseAttributeInt(string? value, int defaultValue = 0)
+        {
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed))
+            {
+                return parsed;
+            }
+
+            return defaultValue;
+        }
+
         private void ShowIdentifyEditorForGraphic(Graphic graphic)
         {
             currentlyIdentifiedGraphic = graphic;
-            ClassValueEntry.Text = GetAttributeString(graphic, "class_value");
-            SizeValueEntry.Text = GetAttributeString(graphic, "size_value");
-            TransparencyValueEntry.Text = GetAttributeString(graphic, "transparency_value");
-            RotationValueEntry.Text = GetAttributeString(graphic, "rotation_value");
-            ColorValueEntry.Text = GetAttributeString(graphic, "color_value");
+            ClassValueEntry.Text = GetAttributeInt(graphic, "class_value").ToString(CultureInfo.InvariantCulture);
+            SizeValueEntry.Text = GetAttributeInt(graphic, "size_value").ToString(CultureInfo.InvariantCulture);
+            TransparencyValueEntry.Text = GetAttributeInt(graphic, "transparency_value").ToString(CultureInfo.InvariantCulture);
+            RotationValueEntry.Text = GetAttributeInt(graphic, "rotation_value").ToString(CultureInfo.InvariantCulture);
+            ColorValueEntry.Text = GetAttributeInt(graphic, "color_value").ToString(CultureInfo.InvariantCulture);
             IdentifyPopupOverlay.IsVisible = true;
         }
 
@@ -1365,11 +1407,11 @@ namespace NETGraphicsTester
                 return;
             }
 
-            currentlyIdentifiedGraphic.Attributes["class_value"] = ClassValueEntry.Text ?? string.Empty;
-            currentlyIdentifiedGraphic.Attributes["size_value"] = SizeValueEntry.Text ?? string.Empty;
-            currentlyIdentifiedGraphic.Attributes["transparency_value"] = TransparencyValueEntry.Text ?? string.Empty;
-            currentlyIdentifiedGraphic.Attributes["rotation_value"] = RotationValueEntry.Text ?? string.Empty;
-            currentlyIdentifiedGraphic.Attributes["color_value"] = ColorValueEntry.Text ?? string.Empty;
+            currentlyIdentifiedGraphic.Attributes["class_value"] = ParseAttributeInt(ClassValueEntry.Text);
+            currentlyIdentifiedGraphic.Attributes["size_value"] = ParseAttributeInt(SizeValueEntry.Text);
+            currentlyIdentifiedGraphic.Attributes["transparency_value"] = ParseAttributeInt(TransparencyValueEntry.Text);
+            currentlyIdentifiedGraphic.Attributes["rotation_value"] = ParseAttributeInt(RotationValueEntry.Text);
+            currentlyIdentifiedGraphic.Attributes["color_value"] = ParseAttributeInt(ColorValueEntry.Text);
 
             StatusLabel.Text = "Updated identified graphic attributes.";
             IdentifyPopupOverlay.IsVisible = false;
