@@ -64,7 +64,7 @@
                             <Label Text="Count"
                                    VerticalOptions="Center" />
                             <Entry x:Name="CountEntry"
-                                   Text="25"
+                                   Text="7"
                                    Keyboard="Numeric"
                                    HorizontalOptions="Fill"
                                    ClearButtonVisibility="WhileEditing" />
@@ -139,8 +139,12 @@
                                                                         HeightRequest="190"
                                                                         VerticalScrollBarVisibility="Always">
                             <VerticalStackLayout Spacing="8">
-                                <Button Text="Add"
-                                        Clicked="OnAddGraphicsClicked" />
+                                <Button Text="Add points"
+                                        Clicked="OnAddPointGraphicsClicked" />
+                                <Button Text="Add lines"
+                                        Clicked="OnAddLineGraphicsClicked" />
+                                <Button Text="Add polygons"
+                                        Clicked="OnAddPolygonGraphicsClicked" />
                                 <Button Text="Remove"
                                         Clicked="OnRemoveGraphicsClicked" />
                                 <Button Text="Move (Uniform)"

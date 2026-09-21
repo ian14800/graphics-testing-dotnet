@@ -226,10 +226,21 @@ namespace NETGraphicsTester
             });
         }
 
-        private void OnAddGraphicsClicked(object sender, EventArgs e)
+        private async void OnAddPointGraphicsClicked(object sender, EventArgs e)
         {
-            AddGraphicsOperation(updateUi: true);
+            await AddGraphicsOperation(updateUi: true, geomType: "point");
         }
+
+        private async void OnAddLineGraphicsClicked(object sender, EventArgs e)
+        {
+            await AddGraphicsOperation(updateUi: true, geomType: "line");
+        }
+
+        private async void OnAddPolygonGraphicsClicked(object sender, EventArgs e)
+        {
+            await AddGraphicsOperation(updateUi: true, geomType: "polygon");
+        }
+
 
         private void OnToggleManualOperationsClicked(object sender, EventArgs e)
         {
@@ -239,7 +250,7 @@ namespace NETGraphicsTester
                 : "Show controls";
         }
 
-        private void AddGraphicsOperation(bool updateUi)
+        async private Task AddGraphicsOperation(bool updateUi, string geomType)
         {
             int count = GetRequestedCount();
             if (count <= 0)
@@ -271,31 +282,138 @@ namespace NETGraphicsTester
                 drawClock.Start();
             }
 
-
-            for (int i = 0; i < count; i++)
+            if (geomType == "point")
             {
-                double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
+                for (int i = 0; i < count; i++)
+                {
+                    double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                    double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                    double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
 
-                Graphic graphic = new Graphic(point);
-                graphic.Attributes["class_value"] = random.Next(ModelClassMin, ModelClassMax + 1);
-                graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                graphic.Attributes["rotation_value"] = "50";
-                graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                graphicsOverlay.Graphics.Add(graphic);
-                System.Diagnostics.Debug.WriteLine("Added graphic");
+                    Graphic graphic = new Graphic(point);
+                    int symbolCount = 57;
+                    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["rotation_value"] = "50";
+                    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                    graphicsOverlay.Graphics.Add(graphic);
+                }
+
+                // SimpleRenderer pointRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 10));
+                // graphicsOverlay.Renderer = pointRenderer;
+
+                await AddSymbolRenderer("point");
+
+                operationTimer.Stop();
+                if (updateUi)
+                {
+                    EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                    StatusLabel.Text = $"Added {count} point graphics.";
+                }
+            }
+            else if (geomType == "line")
+            {
+                double xRange = extent.XMax - extent.XMin;
+                double yRange = extent.YMax - extent.YMin;
+                double xStep = xRange / (count - 1);
+                double yStep = yRange / (count - 1);
+                for (int i = 0; i < count; i++)
+                {
+
+                    double currentXMin = extent.XMin + (i * xStep);
+                    double currentXMax = extent.XMin + ((i + 1) * xStep);
+                    // double currentYMin = extent.YMin + (i * yStep);
+                    // double currentYMax = extent.YMin + ((i + 1) * yStep);
+
+                    double x1 = currentXMin;
+                    double y1 = extent.YMin;
+                    double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
+
+                    double x2 = currentXMax;
+                    double y2 = extent.YMax;
+                    double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
+
+                    Polyline line = new Polyline(new MapPoint[] { point1, point2 }, extent.SpatialReference);
+
+                    Graphic graphic = new Graphic(line);
+                    int symbolCount = 33;
+                    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["rotation_value"] = "50";
+                    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                    graphicsOverlay.Graphics.Add(graphic);
+                }
+                operationTimer.Stop();
+
+                // SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Blue, 2));
+                // graphicsOverlay.Renderer = lineRenderer;
+
+                await AddSymbolRenderer("line");
+
+                if (updateUi)
+                {
+                    EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                    StatusLabel.Text = $"Added {count} line graphics.";
+                }
+            }
+            else if (geomType == "polygon")
+            {
+                double xRange = extent.XMax - extent.XMin;
+                double yRange = extent.YMax - extent.YMin;
+                double xStep = xRange / (count - 1);
+                double yStep = yRange / (count - 1);
+                for (int i = 0; i < count; i++)
+                {
+                    double currentXMin = extent.XMin + (i * xStep);
+                    double currentXMax = extent.XMin + ((i + 1) * xStep);
+                    // double currentYMin = extent.YMin + (i * yStep);
+                    // double currentYMax = extent.YMin + ((i + 1) * yStep);
+
+                    double x1 = currentXMin;
+                    double y1 = extent.YMin;
+                    double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
+
+                    double x2 = currentXMax;
+                    double y2 = extent.YMin;
+                    double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
+                                        
+                    double x3 = currentXMax;
+                    double y3 = extent.YMax;
+                    double z3 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point3 = new MapPoint(x3, y3, z3, extent.SpatialReference);
+
+                    Polygon polygon = new Polygon(new MapPoint[] { point1, point2, point3 }, extent.SpatialReference);
+
+                    Graphic graphic = new Graphic(polygon);
+                    int symbolCount = 8;
+                    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["rotation_value"] = "50";
+                    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                    graphicsOverlay.Graphics.Add(graphic);
+                }
+                operationTimer.Stop();
+
+                // SimpleRenderer polygonRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Green, null));
+                // graphicsOverlay.Renderer = polygonRenderer;
+                await AddSymbolRenderer("polygon");
+                if (updateUi)
+                {
+                    EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                    StatusLabel.Text = $"Added {count} polygon graphics.";
+                }
+            }
             }
 
-            operationTimer.Stop();
-            if (updateUi)
-            {
-                EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                StatusLabel.Text = $"Added {count} graphics.";
-            }
-        }
+
 
         private void OnRemoveGraphicsClicked(object sender, EventArgs e)
         {
@@ -516,6 +634,49 @@ namespace NETGraphicsTester
             }
         }
 
+        private async Task AddSymbolRenderer(string geomType)
+        {
+            string symbolFilePath = string.Empty;
+
+
+            if (geomType == "point")
+            {
+                symbolFilePath = "Wildfire_points.stylx";
+            }
+            else if (geomType == "line")
+            {
+                symbolFilePath = "Wildfire_lines_mobile.stylx";
+            }
+            else if (geomType == "polygon")
+            {
+                symbolFilePath = "Wildfire_polygons.stylx";
+            } 
+
+            SymbolStyle _symbols = await SymbolStyle.OpenAsync(symbolFilePath);
+            SymbolStyleSearchParameters searchParams1 = new SymbolStyleSearchParameters();
+
+            IList<SymbolStyleSearchResult> styleResults = await _symbols.SearchSymbolsAsync(searchParams1);
+            
+            UniqueValueRenderer styleUniqueRenderer = new UniqueValueRenderer();
+            styleUniqueRenderer.FieldNames.Add("class_value");
+
+            int symbolIndex = 1;
+
+            foreach(SymbolStyleSearchResult result in styleResults)
+            {
+                // MultilayerPointSymbol multiLayerSym = await result.GetSymbolAsync() as MultilayerPointSymbol;
+                Symbol multiLayerSym = await result.GetSymbolAsync();
+
+                styleUniqueRenderer.UniqueValues.Add(new UniqueValue(result.Name, result.Key, multiLayerSym, symbolIndex.ToString()));
+
+                Debug.WriteLine($"Added symbol to renderer: {result.Name}, type: {multiLayerSym.GetType().Name ?? "Unknown"}");
+
+                symbolIndex++;
+            }
+
+            graphicsOverlay.Renderer = styleUniqueRenderer;
+        }
+
         private void OnApplyJsonRendererClicked(object sender, EventArgs e)
         {
             string json = RendererJsonEditor.Text?.Trim() ?? string.Empty;
@@ -619,9 +780,7 @@ namespace NETGraphicsTester
                     {
                         StatusLabel.Text = "Overlay's surface placement updated to absolute.";
                     }
-                    break;
-
-                    
+                    break;   
             }
         }
 
@@ -1141,17 +1300,17 @@ namespace NETGraphicsTester
                             AddOverlayOperation(updateUi: false);
                             break;
                         case "Add/move/remove":
-                            AddGraphicsOperation(updateUi: false);
+                            // AddGraphicsOperation(updateUi: false);
                             MoveGraphicsRandomOperation(updateUi: false);
                             RemoveGraphicsOperation(updateUi: false);
                             break;
                         case "Add/give symbols/remove":
-                            AddGraphicsOperation(updateUi: false);
+                            // AddGraphicsOperation(updateUi: false);
                             await AddSymbolsOperationAsync(updateUi: false);
                             RemoveGraphicsOperation(updateUi: false);
                             break;
                         case "Add/give symbols/remove overlay":
-                            AddGraphicsOperation(updateUi: false);
+                            // AddGraphicsOperation(updateUi: false);
                             await AddSymbolsOperationAsync(updateUi: false);
                             RemoveOverlayOperation(updateUi: false);
                             RemoveGraphicsOperation(updateUi: false);
