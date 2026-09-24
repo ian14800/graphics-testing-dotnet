@@ -606,13 +606,14 @@ namespace NETGraphicsTester
         private void OnApplyJsonSymbolClicked(object sender, EventArgs e)
         {
             string json = (SymbolJsonEditor.Text ?? string.Empty).Trim().Trim('"', '\'');
+            string sizeUp = json.Replace("\"size\":16", "\"size\":42");
             int count = GetRequestedCount();
             if (count <= 0)
             {
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(json))
+            if (string.IsNullOrWhiteSpace(sizeUp))
             {
                 StatusLabel.Text = "Enter symbol JSON.";
                 return;
@@ -620,7 +621,7 @@ namespace NETGraphicsTester
 
             try
             {
-                Symbol? symbol = Symbol.FromJson(json);
+                Symbol? symbol = Symbol.FromJson(sizeUp);
 
                 if (symbol == null)
                 {
