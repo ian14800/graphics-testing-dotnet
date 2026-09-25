@@ -317,11 +317,85 @@ namespace NETGraphicsTester
                 System.Diagnostics.Debug.WriteLine("Added graphic");
             }
 
+            var redLayer = CreateCircleLayer(System.Drawing.Color.Red, 40);
+            var greenLayer = CreateCircleLayer(System.Drawing.Color.Green, 20);
+
+            var multiLayerSymbol = new MultilayerPointSymbol(
+            new SymbolLayer[] { redLayer, greenLayer });
+
+            graphicsOverlay.Renderer = new SimpleRenderer(multiLayerSymbol);
+
             operationTimer.Stop();
             if (updateUi)
             {
                 EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
                 StatusLabel.Text = $"Added {count} graphics.";
+            }
+        }
+
+        private static VectorMarkerSymbolLayer CreateCircleLayer(System.Drawing.Color color, double size)
+        {
+            const int segments = 32;
+
+            var points = Enumerable.Range(0, segments + 1)
+                .Select(index =>
+                {
+                    double angle = 2 * Math.PI * index / segments;
+                    return new MapPoint(Math.Cos(angle), Math.Sin(angle));
+                });
+            
+            var circleGeometry = new Polygon(points);
+            var fillSymbol = new MultilayerPolygonSymbol(
+                new SymbolLayer[] { new SolidFillSymbolLayer(color) });
+
+            var element = new VectorMarkerSymbolElement(circleGeometry, fillSymbol);
+
+            return new VectorMarkerSymbolLayer(
+                new[] { element })
+            {
+                Size = size
+            };
+        }
+
+        private void OnOpacitySliderChanged(object sender, EventArgs e, string sliderType)
+        {
+            if (sender is not Slider slider)
+            {
+                return;
+            }
+
+            int opacityValue = (int)(slider.Value);
+
+            switch (sliderType)
+            {
+                case "overlay":
+                    graphicsOverlay.Opacity = opacityValue;
+                    break;
+                case "graphic":
+                    Graphic graphic = graphicsOverlay.Graphics.FirstOrDefault();
+                    if (graphic != null)
+                    {
+                        graphic.Opacity = opacityValue;
+                    }
+                    break;
+                case "topLayer":
+                    Graphic graphic1 = graphicsOverlay.Graphics.FirstOrDefault();
+                    if (graphic1 != null)
+                    {
+                        MultilayerSymbol symbol = graphic1.Symbol as MultilayerSymbol;
+                        symbol.SymbolLayers[0].Opacity = opacityValue;
+                    }
+                    break;
+                case "bottomLayer":
+                    Graphic graphic2 = graphicsOverlay.Graphics.FirstOrDefault();
+                    if (graphic2 != null)
+                    {
+                        MultilayerSymbol symbol = graphic2.Symbol as MultilayerSymbol;
+                        symbol.SymbolLayers[1].Opacity = opacityValue;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 

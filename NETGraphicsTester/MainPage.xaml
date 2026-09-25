@@ -64,7 +64,7 @@
                             <Label Text="Count"
                                    VerticalOptions="Center" />
                             <Entry x:Name="CountEntry"
-                                   Text="25"
+                                   Text="1"
                                    Keyboard="Numeric"
                                    HorizontalOptions="Fill"
                                    ClearButtonVisibility="WhileEditing" />
