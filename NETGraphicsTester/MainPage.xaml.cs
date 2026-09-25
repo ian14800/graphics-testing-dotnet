@@ -723,15 +723,24 @@ namespace NETGraphicsTester
             string file = $"{fieldValue}.glb";
 
             string filePath = Path.Combine(FileSystem.CacheDirectory, file);
-            if (!File.Exists(filePath))
             {
                 using var sourceStream = await FileSystem.OpenAppPackageFileAsync(file);
                 using var destStream = File.Create(filePath);
                 await sourceStream.CopyToAsync(destStream);
             }
-            ModelSymbolLayer modelLayer = new ModelSymbolLayer(new Uri(filePath, UriKind.Absolute)) { Height = size, Width = size, Depth = size };
+
+            //ModelSymbolLayer modelLayer = new ModelSymbolLayer(new Uri(filePath, UriKind.Absolute)) { Height = size, Width = size, Depth = size };
+            ModelSymbolLayer modelLayer = new ModelSymbolLayer(new Uri(filePath, UriKind.Absolute));
             await modelLayer.LoadAsync();
-            MultilayerPointSymbol multilayerSymbol = new MultilayerPointSymbol(new SymbolLayer[] { modelLayer });
+            // MultilayerPointSymbol multilayerSymbol = new MultilayerPointSymbol(new SymbolLayer[] { modelLayer });
+            Debug.WriteLine($"{file} default dimensions: height={modelLayer.Height}, width={modelLayer.Width}, depth={modelLayer.Depth}");
+
+            MultilayerPointSymbol multilayerSymbol = new MultilayerPointSymbol(new SymbolLayer[] { modelLayer })
+            {
+                SceneSizeUnit = SymbolSizeUnits.Meters,
+                Size = size
+            };
+
             return multilayerSymbol;
         }
 
