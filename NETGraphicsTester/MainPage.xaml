@@ -197,16 +197,16 @@
                         </Picker>
                         <Button Text="Run animated workflow"
                                 Clicked="OnRunAnimationsClicked" />
-                    </VerticalStackLayout>
-                    <VerticalStackLayout x:Name="JsonSymbolPanel"
-                                Spacing="8">
-                        <Editor x:Name="SymbolJsonEditor"
-                            Placeholder="Paste ArcGIS symbol JSON"
-                            AutoSize="TextChanges"
-                            MaximumHeightRequest="200" />
+                        <VerticalStackLayout x:Name="JsonSymbolPanel"
+                                             Spacing="8">
+                            <Editor x:Name="SymbolJsonEditor"
+                                    Placeholder="Paste ArcGIS symbol JSON"
+                                    AutoSize="TextChanges"
+                                    MaximumHeightRequest="200" />
 
-                        <Button Text="Apply JSON symbol"
-                            Clicked="OnApplyJsonSymbolClicked" />
+                            <Button Text="Apply JSON symbol"
+                                    Clicked="OnApplyJsonSymbolClicked" />
+                        </VerticalStackLayout>
                     </VerticalStackLayout>
                 </Border>
             </HorizontalStackLayout>
