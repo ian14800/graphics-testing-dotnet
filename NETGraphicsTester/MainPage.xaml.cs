@@ -363,6 +363,8 @@ namespace NETGraphicsTester
             }
             else if (geomType == "polygon")
             {
+                SimpleRenderer interimRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Blue, null));
+                graphicsOverlay.Renderer = interimRenderer;
                 double xRange = extent.XMax - extent.XMin;
                 double yRange = extent.YMax - extent.YMin;
                 double xStep = xRange / (count - 1);
@@ -404,7 +406,7 @@ namespace NETGraphicsTester
 
                 // SimpleRenderer polygonRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Green, null));
                 // graphicsOverlay.Renderer = polygonRenderer;
-                await AddSymbolRenderer("polygon");
+                //await AddSymbolRenderer("polygon");
                 if (updateUi)
                 {
                     EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
@@ -641,15 +643,15 @@ namespace NETGraphicsTester
 
             if (geomType == "point")
             {
-                symbolFilePath = "Wildfire_points.stylx";
+                symbolFilePath = "point_symbols.stylx";
             }
             else if (geomType == "line")
             {
-                symbolFilePath = "Wildfire_lines_mobile.stylx";
+                symbolFilePath = "line_symbols.stylx";
             }
             else if (geomType == "polygon")
             {
-                symbolFilePath = "Wildfire_polygons.stylx";
+                symbolFilePath = "polygon_symbols.stylx";
             } 
 
             SymbolStyle _symbols = await SymbolStyle.OpenAsync(symbolFilePath);
@@ -675,6 +677,7 @@ namespace NETGraphicsTester
             }
 
             graphicsOverlay.Renderer = styleUniqueRenderer;
+            Debug.WriteLine("Applied renderer");
         }
 
         private void OnApplyJsonRendererClicked(object sender, EventArgs e)
@@ -720,6 +723,44 @@ namespace NETGraphicsTester
             catch (Exception ex)
             {
                 StatusLabel.Text = $"Invalid renderer JSON: {ex.Message}";
+            }
+        }
+
+        private void OnApplyJsonSymbolClicked(object sender, EventArgs e)
+        {
+            string json = (SymbolJsonEditor.Text ?? string.Empty).Trim().Trim('"', '\'');
+            string sizeUp = json.Replace("\"size\":16", "\"size\":42");
+            int count = GetRequestedCount();
+            if (count <= 0)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(sizeUp))
+            {
+                StatusLabel.Text = "Enter symbol JSON.";
+                return;
+            }
+
+            try
+            {
+                Symbol? symbol = Symbol.FromJson(sizeUp);
+
+                if (symbol == null)
+                {
+                    StatusLabel.Text = "Symbol JSON did not produce a symbol.";
+                    return;
+                }
+
+                for (int i = 0; i < count; i++)
+                {
+                    graphicsOverlay.Graphics[i].Symbol = symbol;
+                }
+                StatusLabel.Text = "JSON symbol applied";
+            }
+            catch (Exception ex)
+            {
+                StatusLabel.Text = $"Invalid symbol JSON: {ex.Message}";
             }
         }
 
