@@ -125,7 +125,7 @@ namespace NETGraphicsTester
 
                     //localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
-                    var scene = new Scene(SceneViewingMode.Local, SpatialReferences.Wgs84);
+                    var scene = new Scene(SceneViewingMode.Global, SpatialReferences.Wgs84);
                     var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
 
                     await scene.LoadAsync();
@@ -249,9 +249,25 @@ namespace NETGraphicsTester
             });
         }
 
-        private void OnAddGraphicsClicked(object sender, EventArgs e)
+        private async void OnAddPointGraphicsClicked(object sender, EventArgs e)
         {
-            AddGraphicsOperation(updateUi: true);
+            await AddGraphicsOperation(updateUi: true, geomType: "point");
+        }
+
+        private static void LogGraphicsDiagnostic(string message)
+        {
+            string entry = $"{DateTimeOffset.Now:O} [thread {Environment.CurrentManagedThreadId}] {message}";
+            Debug.WriteLine(entry);
+        }
+
+        private async void OnAddLineGraphicsClicked(object sender, EventArgs e)
+        {
+            await AddGraphicsOperation(updateUi: true, geomType: "line");
+        }
+
+        private async void OnAddPolygonGraphicsClicked(object sender, EventArgs e)
+        {
+            await AddGraphicsOperation(updateUi: true, geomType: "polygon");
         }
 
         private void OnToggleManualOperationsClicked(object sender, EventArgs e)
@@ -262,7 +278,7 @@ namespace NETGraphicsTester
                 : "Show controls";
         }
 
-        private void AddGraphicsOperation(bool updateUi)
+        async private Task AddGraphicsOperation(bool updateUi, string geomType)
         {
             int count = GetRequestedCount();
             if (count <= 0)
@@ -294,34 +310,206 @@ namespace NETGraphicsTester
                 drawClock.Start();
             }
 
-
-            for (int i = 0; i < count; i++)
+            if (geomType == "point")
             {
-                double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                MapPoint point = new MapPoint(x, y, z, extent.SpatialReference); 
+                string stage = "starting point graphics";
+                int originalCount = graphicsOverlay.Graphics.Count;
+                try
+                {
+                    LogGraphicsDiagnostic($"Add points: count={count}, existing={originalCount}, mainThread={MainThread.IsMainThread}, runtime={typeof(Symbol).Assembly.GetName().Version}, extent=({extent.XMin}, {extent.YMin}, {extent.XMax}, {extent.YMax}), SR={extent.SpatialReference}, baseZ={baseZ}");
+                    for (int i = 0; i < count; i++)
+                    {
+                        stage = $"constructing point {i + 1}/{count}";
+                        double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                        double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                        MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
 
-                Graphic graphic = new Graphic(point);
-                graphic.Attributes["class_value"] = random.Next(ModelClassMin, ModelClassMax + 1);
-                //graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                //graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                //graphic.Attributes["rotation_value"] = random.Next(0, 360 + 1);
-                //graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                        Graphic graphic = new Graphic(point);
+                        int symbolCount = 57;
+                        graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                        graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                        graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                        graphic.Attributes["rotation_value"] = "50";
+                        graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                        stage = $"adding point {i + 1}/{count}";
+                        if (i == 0 || i == count - 1)
+                        {
+                            LogGraphicsDiagnostic($"Before {stage}: ({x}, {y}, {z})");
+                        }
+                        graphicsOverlay.Graphics.Add(graphic);
+                    }
+                    LogGraphicsDiagnostic($"Point additions completed: total={graphicsOverlay.Graphics.Count}");
 
-                graphic.Attributes["size_value"] = null;
-                graphic.Attributes["transparency_value"] = null;
-                graphic.Attributes["rotation_value"] = null;
-                graphic.Attributes["color_value"] = null;
-                graphicsOverlay.Graphics.Add(graphic);
-                System.Diagnostics.Debug.WriteLine("Added graphic");
+                    SimpleRenderer pointRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 10));
+                    graphicsOverlay.Renderer = pointRenderer;
+                    SymbolJsonEditor.Text = pointRenderer.ToJson();
+
+
+
+                    //stage = "constructing SimpleMarkerSceneSymbol (Sphere, 10 x 10 x 10, Center)";
+                    //LogGraphicsDiagnostic($"Before {stage}");
+                    //SimpleMarkerSceneSymbol pointSymbol = new SimpleMarkerSceneSymbol(SimpleMarkerSceneSymbolStyle.Sphere, System.Drawing.Color.Purple, 10, 10, 10, SceneSymbolAnchorPosition.Center);
+                    //stage = "constructing SimpleRenderer";
+                    //LogGraphicsDiagnostic($"Before {stage}");
+                    //SimpleRenderer pointRenderer = new SimpleRenderer(pointSymbol);
+                    //stage = "assigning graphicsOverlay.Renderer";
+                    //LogGraphicsDiagnostic($"Before {stage}");
+                    //graphicsOverlay.Renderer = pointRenderer;
+                    //LogGraphicsDiagnostic($"After {stage}");
+                    //stage = "pointSymbol.ToJson()";
+                    //LogGraphicsDiagnostic($"Before {stage}");
+                    //MultilayerPointSymbol multilayer = pointSymbol.ToMulilayer
+                    //string symbolJson = pointSymbol.ToJson();
+                    //LogGraphicsDiagnostic($"After {stage}: JSON length={symbolJson.Length}");
+                    //stage = "assigning SymbolJsonEditor.Text";
+                    //LogGraphicsDiagnostic($"Before {stage}");
+                    //SymbolJsonEditor.Text = symbolJson;
+                    //LogGraphicsDiagnostic($"After {stage}");
+
+                    //stage = "copying packaged model to cache";
+                    //string modelPath = Path.Combine(FileSystem.CacheDirectory, "1.glb");
+                    //using (var sourceStream = await FileSystem.OpenAppPackageFileAsync("1.glb"))
+                    //using (var destStream = File.Create(modelPath))
+                    //{
+                    //    await sourceStream.CopyToAsync(destStream);
+                    //}
+
+                    //stage = "constructing ModelSceneSymbol";
+                    //LogGraphicsDiagnostic($"Before {stage}");
+                    //ModelSceneSymbol modelSymbol = await ModelSceneSymbol.CreateAsync(new Uri(modelPath, UriKind.Absolute));
+                    //LogGraphicsDiagnostic($"After {stage}");
+                    //stage = "assigning graphicsOverlay.Renderer for modelSymbol";
+                    //LogGraphicsDiagnostic($"Before {stage}");
+                    //graphicsOverlay.Renderer = new SimpleRenderer(modelSymbol);
+                    //LogGraphicsDiagnostic($"After {stage}");
+                    //stage = "modelSymbol assignment complete";
+                    //LogGraphicsDiagnostic($"Before {stage}");
+                    //LogGraphicsDiagnostic($"After {stage}");
+                    //SymbolJsonEditor.Text = modelSymbol.ToJson();
+
+                    //if (updateUi)
+                    //{
+                    //    StatusLabel.Text = $"Added {count} point graphics.";
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    drawClock.Stop();
+                    LogGraphicsDiagnostic($"Point operation failed at {stage}: {ex}");
+                    if (updateUi)
+                    {
+                        StatusLabel.Text = $"Point operation failed at {stage}: {ex.Message}";
+                    }
+                }
+                finally
+                {
+                    operationTimer.Stop();
+                    if (updateUi)
+                    {
+                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                    }
+                }
             }
-
-            operationTimer.Stop();
-            if (updateUi)
+            else if (geomType == "line")
             {
-                EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                StatusLabel.Text = $"Added {count} graphics.";
+                double xRange = extent.XMax - extent.XMin;
+                double yRange = extent.YMax - extent.YMin;
+                double xStep = xRange / (count - 1);
+                double yStep = yRange / (count - 1);
+                for (int i = 0; i < count; i++)
+                {
+
+                    double currentXMin = extent.XMin + (i * xStep);
+                    double currentXMax = extent.XMin + ((i + 1) * xStep);
+                    // double currentYMin = extent.YMin + (i * yStep);
+                    // double currentYMax = extent.YMin + ((i + 1) * yStep);
+
+                    double x1 = currentXMin;
+                    double y1 = extent.YMin;
+                    double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
+
+                    double x2 = currentXMax;
+                    double y2 = extent.YMax;
+                    double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
+
+                    Polyline line = new Polyline(new MapPoint[] { point1, point2 }, extent.SpatialReference);
+
+                    Graphic graphic = new Graphic(line);
+                    int symbolCount = 33;
+                    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["rotation_value"] = "50";
+                    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                    graphicsOverlay.Graphics.Add(graphic);
+                }
+                operationTimer.Stop();
+
+                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.LongDash, System.Drawing.Color.Black, 100));
+                graphicsOverlay.Renderer = lineRenderer;
+                SymbolJsonEditor.Text = lineRenderer.ToJson();
+
+                if (updateUi)
+                {
+                    EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                    StatusLabel.Text = $"Added {count} line graphics.";
+                }
+            }
+            else if (geomType == "polygon")
+            {
+                SimpleRenderer interimRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Orange, null));
+                graphicsOverlay.Renderer = interimRenderer;
+                SymbolJsonEditor.Text = interimRenderer.ToJson();
+                double xRange = extent.XMax - extent.XMin;
+                double yRange = extent.YMax - extent.YMin;
+                double xStep = xRange / (count - 1);
+                double yStep = yRange / (count - 1);
+                for (int i = 0; i < count; i++)
+                {
+                    double currentXMin = extent.XMin + (i * xStep);
+                    double currentXMax = extent.XMin + ((i + 1) * xStep);
+                    // double currentYMin = extent.YMin + (i * yStep);
+                    // double currentYMax = extent.YMin + ((i + 1) * yStep);
+
+                    double x1 = currentXMin;
+                    double y1 = extent.YMin;
+                    double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
+
+                    double x2 = currentXMax;
+                    double y2 = extent.YMin;
+                    double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
+                                        
+                    double x3 = currentXMax;
+                    double y3 = extent.YMax;
+                    double z3 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point3 = new MapPoint(x3, y3, z3, extent.SpatialReference);
+
+                    Polygon polygon = new Polygon(new MapPoint[] { point1, point2, point3 }, extent.SpatialReference);
+
+                    Graphic graphic = new Graphic(polygon);
+                    int symbolCount = 8;
+                    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                    graphic.Attributes["rotation_value"] = "50";
+                    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                    graphicsOverlay.Graphics.Add(graphic);
+                }
+                operationTimer.Stop();
+
+                // SimpleRenderer polygonRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Green, null));
+                // graphicsOverlay.Renderer = polygonRenderer;
+                //await AddSymbolRenderer("polygon");
+                if (updateUi)
+                {
+                    EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                    StatusLabel.Text = $"Added {count} polygon graphics.";
+                }
             }
         }
 
@@ -408,6 +596,8 @@ namespace NETGraphicsTester
             }
 
 
+            string layerType;
+
             switch (rendererIndex)
             {
                 case 0:
@@ -418,58 +608,124 @@ namespace NETGraphicsTester
                         EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
                         StatusLabel.Text = $"Renderer set to simple red circle.";
                     }
+                    //layerType = "ModelSceneSymbol";
+                    //string PointSceneLayerUri1 = $"https://services5.arcgis.com/N82JbI5EYtAkuUKU/arcgis/rest/services/{layerType}/FeatureServer/0";
+                    //ArcGISSceneLayer pointSceneLayer1 = new ArcGISSceneLayer(new Uri(PointSceneLayerUri1));
+                    //sceneView.Scene.OperationalLayers.Add(pointSceneLayer1);
+
+                    //Renderer renderer1 = pointSceneLayer1.Renderer;
+
+                    //String rendererJson1 = renderer1.ToJson();
+
+                    //SymbolJsonEditor.Text = rendererJson1;
+                    //Debug.WriteLine($"Renderering layer {layerType}");
+
+                    // AddLayerAndExtractSymbol("0");
                     break;
                 case 1:
-                    SimpleRenderer blueSquare = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Square, System.Drawing.Color.Blue, 18));
-                    graphicsOverlay.Renderer = blueSquare;
-                    operationTimer.Stop();
-                    if (updateUi)
-                    {
-                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                        StatusLabel.Text = $"Renderer set to simple blue square.";
-                    }
-                    break;
-                case 2:
+                    layerType = "PolygonFills";
+                    string PointSceneLayerUri2 = $"https://services5.arcgis.com/N82JbI5EYtAkuUKU/arcgis/rest/services/PolygonFilleSymbols/FeatureServer/11";
+                    ArcGISSceneLayer pointSceneLayer2 = new ArcGISSceneLayer(new Uri(PointSceneLayerUri2));
                     try
                     {
-                        UniqueValueRenderer uniqueValueModels = new UniqueValueRenderer();
-                        uniqueValueModels.FieldNames.Add("class_value");
+                        LogGraphicsDiagnostic($"Before loading {layerType}: LoadStatus={pointSceneLayer2.LoadStatus}");
+                        await pointSceneLayer2.LoadAsync();
+                        LogGraphicsDiagnostic($"After loading {layerType}: LoadStatus={pointSceneLayer2.LoadStatus}, LoadError={pointSceneLayer2.LoadError}");
+                        sceneView.Scene.OperationalLayers.Add(pointSceneLayer2);
 
-                        MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 1", "1.glb", modelSymbol1, "1"));
+                        Renderer? renderer2 = pointSceneLayer2.Renderer;
+                        LogGraphicsDiagnostic($"{layerType} renderer type={renderer2?.GetType().FullName ?? "null"}");
+                        if (renderer2 == null)
+                        {
+                            RendererJsonEditor.Text = string.Empty;
+                            if (updateUi)
+                            {
+                                StatusLabel.Text = $"{layerType} loaded but exposes no renderer. See debug output.";
+                            }
+                            break;
+                        }
 
-                        MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 2", "2.glb", modelSymbol2, "2"));
-
-                        MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 3", "3.glb", modelSymbol3, "3"));
-
-                        MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 4", "4.glb", modelSymbol4, "4"));
-
-                        MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 5", "5.glb", modelSymbol5, "5"));
-
-                        uniqueValueModels.DefaultSymbol = modelSymbol1;
-                        uniqueValueModels.DefaultLabel = "Default model";
-
-                        graphicsOverlay.Renderer = uniqueValueModels;
-                        operationTimer.Stop();
+                        LogGraphicsDiagnostic($"Before {layerType} renderer.ToJson()");
+                        string rendererJson2 = renderer2.ToJson();
+                        LogGraphicsDiagnostic($"After {layerType} renderer.ToJson(): JSON length={rendererJson2.Length}");
+                        LogGraphicsDiagnostic(rendererJson2);
+                        RendererJsonEditor.Text = rendererJson2;
                         if (updateUi)
                         {
-                            EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                            StatusLabel.Text = $"Renderer set to 3D model unique values.";
+                            StatusLabel.Text = $"Loaded {layerType} renderer JSON.";
                         }
                     }
                     catch (Exception ex)
                     {
+                        drawClock.Stop();
+                        LogGraphicsDiagnostic($"{layerType} load/renderer extraction failed: LoadStatus={pointSceneLayer2.LoadStatus}, LoadError={pointSceneLayer2.LoadError}, exception={ex}");
+                        if (updateUi)
+                        {
+                            StatusLabel.Text = $"Could not load {layerType} renderer: {ex.Message}";
+                        }
+                    }
+                    finally
+                    {
                         operationTimer.Stop();
                         if (updateUi)
                         {
                             EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                            StatusLabel.Text = $"Model renderer failed: {ex.Message}";
                         }
                     }
+                    break;
+                case 2:
+                    layerType = "PictureFillSymbol";
+                    string PointSceneLayerUri3 = $"https://services5.arcgis.com/N82JbI5EYtAkuUKU/arcgis/rest/services/{layerType}/FeatureServer/0";
+                    ArcGISSceneLayer pointSceneLayer3 = new ArcGISSceneLayer(new Uri(PointSceneLayerUri3));
+                    sceneView.Scene.OperationalLayers.Add(pointSceneLayer3);    
+
+                    Renderer renderer3 = pointSceneLayer3.Renderer;
+
+                    String rendererJson3 = renderer3.ToJson();
+
+                    SymbolJsonEditor.Text = rendererJson3;
+
+                    Debug.WriteLine($"Renderering layer {layerType}");
+                    // try
+                    // {
+                    //     UniqueValueRenderer uniqueValueModels = new UniqueValueRenderer();
+                    //     uniqueValueModels.FieldNames.Add("class_value");
+
+                    //     MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1");
+                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 1", "1.glb", modelSymbol1, "1"));
+
+                    //     MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2");
+                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 2", "2.glb", modelSymbol2, "2"));
+
+                    //     MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3");
+                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 3", "3.glb", modelSymbol3, "3"));
+
+                    //     MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4");
+                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 4", "4.glb", modelSymbol4, "4"));
+
+                    //     MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5");
+                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 5", "5.glb", modelSymbol5, "5"));
+
+                    //     uniqueValueModels.DefaultSymbol = modelSymbol1;
+                    //     uniqueValueModels.DefaultLabel = "Default model";
+
+                    //     graphicsOverlay.Renderer = uniqueValueModels;
+                    //     operationTimer.Stop();
+                    //     if (updateUi)
+                    //     {
+                    //         EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                    //         StatusLabel.Text = $"Renderer set to 3D model unique values.";
+                    //     }
+                    // }
+                    // catch (Exception ex)
+                    // {
+                    //     operationTimer.Stop();
+                    //     if (updateUi)
+                    //     {
+                    //         EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                    //         StatusLabel.Text = $"Model renderer failed: {ex.Message}";
+                    //     }
+                    // }
                     break;
                 case 3:
                     try
@@ -515,32 +771,45 @@ namespace NETGraphicsTester
                     }
                     break;
                 case 4:
-                    string symbolFilePath = "MinShipSymbols_round1_points.stylx";
-                    SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
+                    //string symbolFilePath = "MinShipSymbols_round1_points.stylx";
+                    //SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
 
-                    SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
-                    SymbolStyleSearchParameters searchParams1 = new SymbolStyleSearchParameters();
+                    //SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
+                    //SymbolStyleSearchParameters searchParams1 = new SymbolStyleSearchParameters();
 
-                    IList<SymbolStyleSearchResult> styleResults = await _pointSymbols.SearchSymbolsAsync(searchParams1);
+                    //IList<SymbolStyleSearchResult> styleResults = await _pointSymbols.SearchSymbolsAsync(searchParams1);
 
-                    UniqueValueRenderer styleUniqueRenderer = new UniqueValueRenderer();
-                    styleUniqueRenderer.FieldNames.Add("class_value");
+                    //UniqueValueRenderer styleUniqueRenderer = new UniqueValueRenderer();
+                    //styleUniqueRenderer.FieldNames.Add("class_value");
 
-                    int symbolIndex = 1;
+                    //int symbolIndex = 1;
 
-                    foreach(SymbolStyleSearchResult result in styleResults)
-                    {
-                        // MultilayerPointSymbol multiLayerSym = await result.GetSymbolAsync() as MultilayerPointSymbol;
-                        Symbol multiLayerSym = await result.GetSymbolAsync();
+                    //foreach(SymbolStyleSearchResult result in styleResults)
+                    //{
+                    //    // MultilayerPointSymbol multiLayerSym = await result.GetSymbolAsync() as MultilayerPointSymbol;
+                    //    Symbol multiLayerSym = await result.GetSymbolAsync();
 
-                        styleUniqueRenderer.UniqueValues.Add(new UniqueValue(result.Name, result.Key, multiLayerSym, symbolIndex.ToString()));
+                    //    styleUniqueRenderer.UniqueValues.Add(new UniqueValue(result.Name, result.Key, multiLayerSym, symbolIndex.ToString()));
 
-                        Debug.WriteLine($"Added symbol to renderer: {result.Name}, type: {multiLayerSym.GetType().Name ?? "Unknown"}");
+                    //    Debug.WriteLine($"Added symbol to renderer: {result.Name}, type: {multiLayerSym.GetType().Name ?? "Unknown"}");
 
-                        symbolIndex++;
-                    }
+                    //    symbolIndex++;
+                    //}
 
-                    graphicsOverlay.Renderer = styleUniqueRenderer;
+                    //graphicsOverlay.Renderer = styleUniqueRenderer;
+
+                    TextSymbol textSymbol = new TextSymbol(
+                        "abcdefg",
+                        System.Drawing.Color.Black,
+                        24.0,
+                        Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Center,
+                        Esri.ArcGISRuntime.Symbology.VerticalAlignment.Middle
+                        );
+
+                    SymbolJsonEditor.Text = textSymbol.ToJson();
+
+                    SimpleRenderer textRenderer = new SimpleRenderer(textSymbol);
+                    graphicsOverlay.Renderer = textRenderer;
 
                     break;
                 case 5:
@@ -574,6 +843,36 @@ namespace NETGraphicsTester
                     break;
             }
         }
+
+        // private async void AddLayerAndExtractSymbol(string sceneLayerUri)
+        // {
+        //     try
+        //     {
+        //         ArcGISSceneLayer pointSceneLayer = new ArcGISSceneLayer(new Uri(sceneLayerUri));
+        //         await pointSceneLayer.LoadAsync();
+        //         sceneView.Scene.OperationalLayers.Add(pointSceneLayer);
+
+        //         var query = new QueryParameters
+        //         {
+        //             WhereClause = "1=1",
+        //             MaxFeatures = 1
+        //         };
+        //         var features = await pointSceneLayer.FeatureTable.QueryFeaturesAsync(query);
+        //         Feature? feature = features.FirstOrDefault();
+
+        //         if (feature?.Symbol == null)
+        //         {
+        //             StatusLabel.Text = "The scene layer returned no feature symbol.";
+        //             return;
+        //         }
+
+        //         SymbolJsonEditor.Text = feature.Symbol.ToJson();
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         StatusLabel.Text = $"Could not extract a scene layer symbol: {ex.Message}";
+        //     }
+        // }
 
         private void OnApplyJsonRendererClicked(object sender, EventArgs e)
         {
@@ -623,6 +922,11 @@ namespace NETGraphicsTester
             {
                 Symbol? symbol = Symbol.FromJson(sizeUp);
 
+                if (symbol != MultilayerSymbol)
+                {
+                    
+                }
+
                 if (symbol == null)
                 {
                     StatusLabel.Text = "Symbol JSON did not produce a symbol.";
@@ -634,6 +938,8 @@ namespace NETGraphicsTester
                     graphicsOverlay.Graphics[i].Symbol = symbol;
                 }
                 StatusLabel.Text = "JSON symbol applied";
+
+                SymbolJsonEditor.Text = symbol.ToJson();
             }
             catch (Exception ex)
             {
@@ -1261,17 +1567,17 @@ namespace NETGraphicsTester
                             AddOverlayOperation(updateUi: false);
                             break;
                         case "Add/move/remove":
-                            AddGraphicsOperation(updateUi: false);
+                            //AddGraphicsOperation(updateUi: false);
                             MoveGraphicsRandomOperation(updateUi: false);
                             RemoveGraphicsOperation(updateUi: false);
                             break;
                         case "Add/give symbols/remove":
-                            AddGraphicsOperation(updateUi: false);
+                            //AddGraphicsOperation(updateUi: false);
                             await AddSymbolsOperationAsync(updateUi: false);
                             RemoveGraphicsOperation(updateUi: false);
                             break;
                         case "Add/give symbols/remove overlay":
-                            AddGraphicsOperation(updateUi: false);
+                            //AddGraphicsOperation(updateUi: false);
                             await AddSymbolsOperationAsync(updateUi: false);
                             RemoveOverlayOperation(updateUi: false);
                             RemoveGraphicsOperation(updateUi: false);

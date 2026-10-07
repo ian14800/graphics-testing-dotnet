@@ -1,160 +1,22 @@
 {
-  "type": "CIMPointSymbol",
-  "symbolLayers": [
-    {
-      "type": "CIMVectorMarker",
-      "enable": true,
-      "name": "Group 25",
-      "colorLocked": true,
-      "anchorPointUnits": "Relative",
-      "dominantSizeAxis3D": "Y",
-      "size": 16,
-      "billboardMode3D": "FaceNearPlane",
-      "frame": { "xmin": 0.0, "ymin": 0.0, "xmax": 60.0, "ymax": 60.0 },
-      "markerGraphics": [
-        {
-          "type": "CIMMarkerGraphic",
-          "geometry": {
-            "rings": [
-              [
-                [42.0, 7.0],
-                [55.0, 30.0],
-                [42.0, 52.0],
-                [18.0, 52.0],
-                [5.0, 30.0],
-                [18.0, 7.0],
-                [42.0, 7.0]
-              ]
-            ]
-          },
-          "symbol": {
-            "type": "CIMPolygonSymbol",
-            "symbolLayers": [
-              {
-                "type": "CIMSolidFill",
-                "enable": true,
-                "color": {
-                  "type": "CIMRGBColor",
-                  "values": [128, 128, 128, 100]
-                }
-              }
-            ],
-            "angleAlignment": "Map"
-          }
-        },
-        {
-          "type": "CIMMarkerGraphic",
-          "geometry": {
-            "rings": [
-              [
-                [19.0, 16.0],
-                [19.0, 19.0],
-                [38.0, 19.0],
-                [41.0, 21.0],
-                [41.0, 16.0],
-                [44.0, 16.0],
-                [44.0, 44.0],
-                [41.0, 44.0],
-                [41.0, 40.0],
-                [38.0, 42.0],
-                [19.0, 42.0],
-                [19.0, 44.0],
-                [16.0, 44.0],
-                [16.0, 16.0],
-                [19.0, 16.0]
-              ]
-            ]
-          },
-          "symbol": {
-            "type": "CIMPolygonSymbol",
-            "symbolLayers": [
-              {
-                "type": "CIMSolidFill",
-                "enable": true,
-                "color": {
-                  "type": "CIMRGBColor",
-                  "values": [255, 255, 255, 100]
-                }
-              }
-            ],
-            "angleAlignment": "Map"
-          }
-        },
-        {
-          "type": "CIMMarkerGraphic",
-          "geometry": {
-            "rings": [
-              [
-                [38.0, 38.0],
-                [20.0, 38.0],
-                [20.0, 26.0],
-                [38.0, 38.0]
-              ]
-            ]
-          },
-          "symbol": {
-            "type": "CIMPolygonSymbol",
-            "symbolLayers": [
-              {
-                "type": "CIMSolidFill",
-                "enable": true,
-                "color": {
-                  "type": "CIMRGBColor",
-                  "values": [128, 128, 128, 100]
-                }
-              }
-            ],
-            "angleAlignment": "Map"
-          }
-        },
-        {
-          "type": "CIMMarkerGraphic",
-          "geometry": {
-            "rings": [
-              [
-                [40.0, 23.0],
-                [40.0, 35.0],
-                [22.0, 23.0],
-                [40.0, 23.0]
-              ]
-            ]
-          },
-          "symbol": {
-            "type": "CIMPolygonSymbol",
-            "symbolLayers": [
-              {
-                "type": "CIMSolidFill",
-                "enable": true,
-                "color": {
-                  "type": "CIMRGBColor",
-                  "values": [128, 128, 128, 100]
-                }
-              }
-            ],
-            "angleAlignment": "Map"
-          }
-        }
-      ],
-      "scaleSymbolsProportionally": true,
-      "respectFrame": true,
-      "clippingPath": {
-        "type": "CIMClippingPath",
-        "clippingType": "Intersect",
-        "path": {
-          "rings": [
-            [
-              [0.0, 0.0],
-              [60.0, 0.0],
-              [60.0, 60.0],
-              [0.0, 60.0],
-              [0.0, 0.0]
-            ]
-          ]
-        }
-      }
-    }
-  ],
-  "haloSize": 1,
-  "scaleX": 1,
-  "angleAlignment": "Display"
+  "angle": 0.0,
+  "backgroundColor": [0, 0, 0, 0],
+  "borderLineColor": [0, 0, 0, 0],
+  "borderLineSize": 0.0,
+  "color": [0, 0, 0, 255],
+  "font": {
+    "decoration": "none",
+    "size": 18.0,
+    "style": "normal",
+    "weight": "normal"
+  },
+  "haloColor": [0, 0, 0, 0],
+  "haloSize": 0.0,
+  "horizontalAlignment": "center",
+  "kerning": false,
+  "text": "abc",
+  "type": "esriTS",
+  "verticalAlignment": "middle",
+  "xoffset": 0.0,
+  "yoffset": 0.0
 }

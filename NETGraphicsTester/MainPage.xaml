@@ -30,7 +30,7 @@
                                                 </x:Array>
                                         </Picker.ItemsSource>
                                 </Picker>
-                                <esriUI:LocalSceneView x:Name="sceneView" Scene="{Binding Scene}" />
+                                <esriUI:SceneView x:Name="sceneView" Scene="{Binding Scene}" />
                                 <Border HorizontalOptions="End"
                                                 VerticalOptions="End"
                                                 Margin="10"
@@ -138,8 +138,12 @@
                                                                         HeightRequest="190"
                                                                         VerticalScrollBarVisibility="Always">
                             <VerticalStackLayout Spacing="8">
-                                <Button Text="Add"
-                                        Clicked="OnAddGraphicsClicked" />
+                                <Button Text="Add points"
+                                        Clicked="OnAddPointGraphicsClicked" />
+                                <Button Text="Add lines"
+                                        Clicked="OnAddLineGraphicsClicked" />
+                                <Button Text="Add polygons"
+                                        Clicked="OnAddPolygonGraphicsClicked" />
                                 <Button Text="Remove"
                                         Clicked="OnRemoveGraphicsClicked" />
                                 <Button Text="Move (Uniform)"
