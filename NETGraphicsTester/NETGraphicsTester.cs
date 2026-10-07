@@ -15,8 +15,6 @@ namespace NETGraphicsTester
         {
             _scene = new Scene()
             {
-#warning To use ArcGIS location services (including basemaps) specify your API Key access token or require the user to sign in using a valid ArcGIS account.
-                // Basemap = new Basemap(BasemapStyle.ArcGISImageryStandard)
             };
             _scene.BaseSurface.ElevationSources.Add(new ArcGISTiledElevationSource(new Uri("https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer")));
         }

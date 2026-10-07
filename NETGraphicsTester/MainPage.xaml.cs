@@ -4,13 +4,8 @@ using Esri.ArcGISRuntime.Symbology;
 using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using System.Diagnostics;
-using System.IO;
-using System.Collections.Specialized;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using Esri.ArcGISRuntime.Data;
-using System.Linq.Expressions;
 
 namespace NETGraphicsTester
 {
@@ -24,13 +19,11 @@ namespace NETGraphicsTester
         public MainPage()
         {
             InitializeComponent();
-            // graphicsOverlay.Graphics.CollectionChanged += OnGraphicsCollectionChanged;
             UpdateGraphicsCountLabel();
             _ = InitializeSceneAsync();
         }
 
         Random random = new Random();
-        int currentRenderer = 0;
         int surfacePlacement = 0;
         double currentOpacity = 1.0;
         bool overlayVisibilty = true;
@@ -92,21 +85,21 @@ namespace NETGraphicsTester
             }
         }
 
-        //private void SceneView_WarningsChanged(object? sender, EventArgs e)
-        //{
-        //    if (sender is Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
-        //    {
-        //        LogSceneViewWarnings(localSceneView);
-        //    }
-        //}
+        private void SceneView_WarningsChanged(object? sender, EventArgs e)
+        {
+            if (sender is Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
+            {
+                LogSceneViewWarnings(localSceneView);
+            }
+        }
 
-        //private static void LogSceneViewWarnings(Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
-        //{
-        //    foreach (Exception warning in localSceneView.Warnings)
-        //    {
-        //        Debug.WriteLine($"LocalSceneView warning: {warning}");
-        //    }
-        //}
+        private static void LogSceneViewWarnings(Esri.ArcGISRuntime.Maui.LocalSceneView localSceneView)
+        {
+            foreach (Exception warning in localSceneView.Warnings)
+            {
+                Debug.WriteLine($"LocalSceneView warning: {warning}");
+            }
+        }
 
         private async Task InitializeSceneAsync()
         {
@@ -123,7 +116,7 @@ namespace NETGraphicsTester
                         return;
                     }
 
-                    //localSceneView.WarningsChanged += SceneView_WarningsChanged;
+                    localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
                     var scene = new Scene(SceneViewingMode.Local, SpatialReferences.Wgs84);
                     var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
@@ -176,7 +169,6 @@ namespace NETGraphicsTester
                     localSceneView.SetViewpointCamera(camera);
                     localSceneView.DrawStatusChanged += SceneView_DrawStatusChanged;
                     localSceneView.GeoViewTapped += OnSceneViewTapped;
-                    //LogSceneViewWarnings(localSceneView);
                 }
                 catch (Exception ex)
                 {
@@ -226,16 +218,6 @@ namespace NETGraphicsTester
                 _ = InitializeSceneAsync();
             }
         }
-
-        // private void OnGraphicsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        // {
-        //     // if (isBatchRun)
-        //     // {
-        //     //     return;
-        //     // }
-
-        //     UpdateGraphicsCountLabel();
-        // }
 
         private void UpdateGraphicsCountLabel()
         {
@@ -316,7 +298,9 @@ namespace NETGraphicsTester
                 int originalCount = graphicsOverlay.Graphics.Count;
                 try
                 {
-                    LogGraphicsDiagnostic($"Add points: count={count}, existing={originalCount}, mainThread={MainThread.IsMainThread}, runtime={typeof(Symbol).Assembly.GetName().Version}, extent=({extent.XMin}, {extent.YMin}, {extent.XMax}, {extent.YMax}), SR={extent.SpatialReference}, baseZ={baseZ}");
+                    SimpleRenderer pointRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 10));
+                    graphicsOverlay.Renderer = pointRenderer;
+                    SymbolJsonEditor.Text = pointRenderer.ToJson();
                     for (int i = 0; i < count; i++)
                     {
                         stage = $"constructing point {i + 1}/{count}";
@@ -339,64 +323,11 @@ namespace NETGraphicsTester
                         }
                         graphicsOverlay.Graphics.Add(graphic);
                     }
-                    LogGraphicsDiagnostic($"Point additions completed: total={graphicsOverlay.Graphics.Count}");
 
-                    SimpleRenderer pointRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 10));
-                    graphicsOverlay.Renderer = pointRenderer;
-                    SymbolJsonEditor.Text = pointRenderer.ToJson();
-
-
-
-                    //stage = "constructing SimpleMarkerSceneSymbol (Sphere, 10 x 10 x 10, Center)";
-                    //LogGraphicsDiagnostic($"Before {stage}");
-                    //SimpleMarkerSceneSymbol pointSymbol = new SimpleMarkerSceneSymbol(SimpleMarkerSceneSymbolStyle.Sphere, System.Drawing.Color.Purple, 10, 10, 10, SceneSymbolAnchorPosition.Center);
-                    //stage = "constructing SimpleRenderer";
-                    //LogGraphicsDiagnostic($"Before {stage}");
-                    //SimpleRenderer pointRenderer = new SimpleRenderer(pointSymbol);
-                    //stage = "assigning graphicsOverlay.Renderer";
-                    //LogGraphicsDiagnostic($"Before {stage}");
-                    //graphicsOverlay.Renderer = pointRenderer;
-                    //LogGraphicsDiagnostic($"After {stage}");
-                    //stage = "pointSymbol.ToJson()";
-                    //LogGraphicsDiagnostic($"Before {stage}");
-                    //MultilayerPointSymbol multilayer = pointSymbol.ToMulilayer
-                    //string symbolJson = pointSymbol.ToJson();
-                    //LogGraphicsDiagnostic($"After {stage}: JSON length={symbolJson.Length}");
-                    //stage = "assigning SymbolJsonEditor.Text";
-                    //LogGraphicsDiagnostic($"Before {stage}");
-                    //SymbolJsonEditor.Text = symbolJson;
-                    //LogGraphicsDiagnostic($"After {stage}");
-
-                    //stage = "copying packaged model to cache";
-                    //string modelPath = Path.Combine(FileSystem.CacheDirectory, "1.glb");
-                    //using (var sourceStream = await FileSystem.OpenAppPackageFileAsync("1.glb"))
-                    //using (var destStream = File.Create(modelPath))
-                    //{
-                    //    await sourceStream.CopyToAsync(destStream);
-                    //}
-
-                    //stage = "constructing ModelSceneSymbol";
-                    //LogGraphicsDiagnostic($"Before {stage}");
-                    //ModelSceneSymbol modelSymbol = await ModelSceneSymbol.CreateAsync(new Uri(modelPath, UriKind.Absolute));
-                    //LogGraphicsDiagnostic($"After {stage}");
-                    //stage = "assigning graphicsOverlay.Renderer for modelSymbol";
-                    //LogGraphicsDiagnostic($"Before {stage}");
-                    //graphicsOverlay.Renderer = new SimpleRenderer(modelSymbol);
-                    //LogGraphicsDiagnostic($"After {stage}");
-                    //stage = "modelSymbol assignment complete";
-                    //LogGraphicsDiagnostic($"Before {stage}");
-                    //LogGraphicsDiagnostic($"After {stage}");
-                    //SymbolJsonEditor.Text = modelSymbol.ToJson();
-
-                    //if (updateUi)
-                    //{
-                    //    StatusLabel.Text = $"Added {count} point graphics.";
-                    //}
                 }
                 catch (Exception ex)
                 {
                     drawClock.Stop();
-                    LogGraphicsDiagnostic($"Point operation failed at {stage}: {ex}");
                     if (updateUi)
                     {
                         StatusLabel.Text = $"Point operation failed at {stage}: {ex.Message}";
@@ -413,6 +344,9 @@ namespace NETGraphicsTester
             }
             else if (geomType == "line")
             {
+                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.LongDash, System.Drawing.Color.Black, 5));
+                graphicsOverlay.Renderer = lineRenderer;
+                SymbolJsonEditor.Text = lineRenderer.ToJson();
                 double xRange = extent.XMax - extent.XMin;
                 double yRange = extent.YMax - extent.YMin;
                 double xStep = xRange / (count - 1);
@@ -447,10 +381,6 @@ namespace NETGraphicsTester
                     graphicsOverlay.Graphics.Add(graphic);
                 }
                 operationTimer.Stop();
-
-                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.LongDash, System.Drawing.Color.Black, 5));
-                graphicsOverlay.Renderer = lineRenderer;
-                SymbolJsonEditor.Text = lineRenderer.ToJson();
 
                 if (updateUi)
                 {
@@ -502,9 +432,6 @@ namespace NETGraphicsTester
                 }
                 operationTimer.Stop();
 
-                // SimpleRenderer polygonRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Green, null));
-                // graphicsOverlay.Renderer = polygonRenderer;
-                //await AddSymbolRenderer("polygon");
                 if (updateUi)
                 {
                     EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
@@ -554,11 +481,6 @@ namespace NETGraphicsTester
             }
         }
 
-        // private async void OnSwapRendererClicked(object sender, EventArgs e)
-        // {
-        //     await SwapRendererOperationAsync(updateUi: true);
-        // }
-
         private async void OnRendererSelectionChanged(object sender, EventArgs e)
         {
             if (sender is not Picker picker || picker.SelectedIndex < 0)
@@ -577,12 +499,6 @@ namespace NETGraphicsTester
 
         private async Task SwapRendererOperationAsync(int rendererIndex, bool updateUi)
         {
-            // currentRenderer++;
-            // if (currentRenderer >= 5)
-            // {
-            //     currentRenderer = 0;
-            // }
-
             if (updateUi)
             {
                 EventTimer.Text = " // event time";
@@ -596,8 +512,6 @@ namespace NETGraphicsTester
             }
 
 
-            string layerType;
-
             switch (rendererIndex)
             {
                 case 0:
@@ -608,124 +522,58 @@ namespace NETGraphicsTester
                         EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
                         StatusLabel.Text = $"Renderer set to simple red circle.";
                     }
-                    //layerType = "ModelSceneSymbol";
-                    //string PointSceneLayerUri1 = $"https://services5.arcgis.com/N82JbI5EYtAkuUKU/arcgis/rest/services/{layerType}/FeatureServer/0";
-                    //ArcGISSceneLayer pointSceneLayer1 = new ArcGISSceneLayer(new Uri(PointSceneLayerUri1));
-                    //sceneView.Scene.OperationalLayers.Add(pointSceneLayer1);
-
-                    //Renderer renderer1 = pointSceneLayer1.Renderer;
-
-                    //String rendererJson1 = renderer1.ToJson();
-
-                    //SymbolJsonEditor.Text = rendererJson1;
-                    //Debug.WriteLine($"Renderering layer {layerType}");
-
-                    // AddLayerAndExtractSymbol("0");
                     break;
                 case 1:
-                    layerType = "PolygonFills";
-                    string PointSceneLayerUri2 = $"https://services5.arcgis.com/N82JbI5EYtAkuUKU/arcgis/rest/services/PolygonFilleSymbols/FeatureServer/11";
-                    ArcGISSceneLayer pointSceneLayer2 = new ArcGISSceneLayer(new Uri(PointSceneLayerUri2));
+                    SimpleRenderer blueSquare = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Diamond, System.Drawing.Color.Blue, 20));
+                    graphicsOverlay.Renderer = blueSquare;
+                    operationTimer.Stop();
+                    if (updateUi)
+                    {
+                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                        StatusLabel.Text = $"Renderer set to simple red circle.";
+                    }
+                    break;
+                case 2:
                     try
                     {
-                        LogGraphicsDiagnostic($"Before loading {layerType}: LoadStatus={pointSceneLayer2.LoadStatus}");
-                        await pointSceneLayer2.LoadAsync();
-                        LogGraphicsDiagnostic($"After loading {layerType}: LoadStatus={pointSceneLayer2.LoadStatus}, LoadError={pointSceneLayer2.LoadError}");
-                        sceneView.Scene.OperationalLayers.Add(pointSceneLayer2);
+                        UniqueValueRenderer uniqueValueModels = new UniqueValueRenderer();
+                        uniqueValueModels.FieldNames.Add("class_value");
 
-                        Renderer? renderer2 = pointSceneLayer2.Renderer;
-                        LogGraphicsDiagnostic($"{layerType} renderer type={renderer2?.GetType().FullName ?? "null"}");
-                        if (renderer2 == null)
-                        {
-                            RendererJsonEditor.Text = string.Empty;
-                            if (updateUi)
-                            {
-                                StatusLabel.Text = $"{layerType} loaded but exposes no renderer. See debug output.";
-                            }
-                            break;
-                        }
+                        MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1");
+                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 1", "1.glb", modelSymbol1, "1"));
 
-                        LogGraphicsDiagnostic($"Before {layerType} renderer.ToJson()");
-                        string rendererJson2 = renderer2.ToJson();
-                        LogGraphicsDiagnostic($"After {layerType} renderer.ToJson(): JSON length={rendererJson2.Length}");
-                        LogGraphicsDiagnostic(rendererJson2);
-                        RendererJsonEditor.Text = rendererJson2;
+                        MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2");
+                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 2", "2.glb", modelSymbol2, "2"));
+
+                        MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3");
+                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 3", "3.glb", modelSymbol3, "3"));
+
+                        MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4");
+                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 4", "4.glb", modelSymbol4, "4"));
+
+                        MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5");
+                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 5", "5.glb", modelSymbol5, "5"));
+
+                        uniqueValueModels.DefaultSymbol = modelSymbol1;
+                        uniqueValueModels.DefaultLabel = "Default model";
+
+                        graphicsOverlay.Renderer = uniqueValueModels;
+                        operationTimer.Stop();
                         if (updateUi)
                         {
-                            StatusLabel.Text = $"Loaded {layerType} renderer JSON.";
+                            EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                            StatusLabel.Text = $"Renderer set to 3D model unique values.";
                         }
                     }
                     catch (Exception ex)
-                    {
-                        drawClock.Stop();
-                        LogGraphicsDiagnostic($"{layerType} load/renderer extraction failed: LoadStatus={pointSceneLayer2.LoadStatus}, LoadError={pointSceneLayer2.LoadError}, exception={ex}");
-                        if (updateUi)
-                        {
-                            StatusLabel.Text = $"Could not load {layerType} renderer: {ex.Message}";
-                        }
-                    }
-                    finally
                     {
                         operationTimer.Stop();
                         if (updateUi)
                         {
                             EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                            StatusLabel.Text = $"Model renderer failed: {ex.Message}";
                         }
                     }
-                    break;
-                case 2:
-                    layerType = "PictureFillSymbol";
-                    string PointSceneLayerUri3 = $"https://services5.arcgis.com/N82JbI5EYtAkuUKU/arcgis/rest/services/{layerType}/FeatureServer/0";
-                    ArcGISSceneLayer pointSceneLayer3 = new ArcGISSceneLayer(new Uri(PointSceneLayerUri3));
-                    sceneView.Scene.OperationalLayers.Add(pointSceneLayer3);    
-
-                    Renderer renderer3 = pointSceneLayer3.Renderer;
-
-                    String rendererJson3 = renderer3.ToJson();
-
-                    SymbolJsonEditor.Text = rendererJson3;
-
-                    Debug.WriteLine($"Renderering layer {layerType}");
-                    // try
-                    // {
-                    //     UniqueValueRenderer uniqueValueModels = new UniqueValueRenderer();
-                    //     uniqueValueModels.FieldNames.Add("class_value");
-
-                    //     MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1");
-                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 1", "1.glb", modelSymbol1, "1"));
-
-                    //     MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2");
-                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 2", "2.glb", modelSymbol2, "2"));
-
-                    //     MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3");
-                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 3", "3.glb", modelSymbol3, "3"));
-
-                    //     MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4");
-                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 4", "4.glb", modelSymbol4, "4"));
-
-                    //     MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5");
-                    //     uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 5", "5.glb", modelSymbol5, "5"));
-
-                    //     uniqueValueModels.DefaultSymbol = modelSymbol1;
-                    //     uniqueValueModels.DefaultLabel = "Default model";
-
-                    //     graphicsOverlay.Renderer = uniqueValueModels;
-                    //     operationTimer.Stop();
-                    //     if (updateUi)
-                    //     {
-                    //         EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                    //         StatusLabel.Text = $"Renderer set to 3D model unique values.";
-                    //     }
-                    // }
-                    // catch (Exception ex)
-                    // {
-                    //     operationTimer.Stop();
-                    //     if (updateUi)
-                    //     {
-                    //         EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                    //         StatusLabel.Text = $"Model renderer failed: {ex.Message}";
-                    //     }
-                    // }
                     break;
                 case 3:
                     try
@@ -771,46 +619,32 @@ namespace NETGraphicsTester
                     }
                     break;
                 case 4:
-                    //string symbolFilePath = "MinShipSymbols_round1_points.stylx";
-                    //SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
+                    string symbolFilePath = "MinShipSymbols_round1_points.stylx";
+                    SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
 
-                    //SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
-                    //SymbolStyleSearchParameters searchParams1 = new SymbolStyleSearchParameters();
+                    SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
+                    SymbolStyleSearchParameters searchParams1 = new SymbolStyleSearchParameters();
 
-                    //IList<SymbolStyleSearchResult> styleResults = await _pointSymbols.SearchSymbolsAsync(searchParams1);
+                    IList<SymbolStyleSearchResult> styleResults = await _pointSymbols.SearchSymbolsAsync(searchParams1);
 
-                    //UniqueValueRenderer styleUniqueRenderer = new UniqueValueRenderer();
-                    //styleUniqueRenderer.FieldNames.Add("class_value");
+                    UniqueValueRenderer styleUniqueRenderer = new UniqueValueRenderer();
+                    styleUniqueRenderer.FieldNames.Add("class_value");
 
-                    //int symbolIndex = 1;
+                    int symbolIndex = 1;
 
-                    //foreach(SymbolStyleSearchResult result in styleResults)
-                    //{
-                    //    // MultilayerPointSymbol multiLayerSym = await result.GetSymbolAsync() as MultilayerPointSymbol;
-                    //    Symbol multiLayerSym = await result.GetSymbolAsync();
+                    foreach (SymbolStyleSearchResult result in styleResults)
+                    {
+                        // MultilayerPointSymbol multiLayerSym = await result.GetSymbolAsync() as MultilayerPointSymbol;
+                        Symbol multiLayerSym = await result.GetSymbolAsync();
 
-                    //    styleUniqueRenderer.UniqueValues.Add(new UniqueValue(result.Name, result.Key, multiLayerSym, symbolIndex.ToString()));
+                        styleUniqueRenderer.UniqueValues.Add(new UniqueValue(result.Name, result.Key, multiLayerSym, symbolIndex.ToString()));
 
-                    //    Debug.WriteLine($"Added symbol to renderer: {result.Name}, type: {multiLayerSym.GetType().Name ?? "Unknown"}");
+                        Debug.WriteLine($"Added symbol to renderer: {result.Name}, type: {multiLayerSym.GetType().Name ?? "Unknown"}");
 
-                    //    symbolIndex++;
-                    //}
+                        symbolIndex++;
+                    }
 
-                    //graphicsOverlay.Renderer = styleUniqueRenderer;
-
-                    TextSymbol textSymbol = new TextSymbol(
-                        "abcdefg",
-                        System.Drawing.Color.Black,
-                        24.0,
-                        Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Center,
-                        Esri.ArcGISRuntime.Symbology.VerticalAlignment.Middle
-                        );
-
-                    SymbolJsonEditor.Text = textSymbol.ToJson();
-
-                    SimpleRenderer textRenderer = new SimpleRenderer(textSymbol);
-                    graphicsOverlay.Renderer = textRenderer;
-
+                    graphicsOverlay.Renderer = styleUniqueRenderer;
                     break;
                 case 5:
                     ClassBreaksRenderer classBreaksRenderer = new ClassBreaksRenderer();
@@ -843,36 +677,6 @@ namespace NETGraphicsTester
                     break;
             }
         }
-
-        // private async void AddLayerAndExtractSymbol(string sceneLayerUri)
-        // {
-        //     try
-        //     {
-        //         ArcGISSceneLayer pointSceneLayer = new ArcGISSceneLayer(new Uri(sceneLayerUri));
-        //         await pointSceneLayer.LoadAsync();
-        //         sceneView.Scene.OperationalLayers.Add(pointSceneLayer);
-
-        //         var query = new QueryParameters
-        //         {
-        //             WhereClause = "1=1",
-        //             MaxFeatures = 1
-        //         };
-        //         var features = await pointSceneLayer.FeatureTable.QueryFeaturesAsync(query);
-        //         Feature? feature = features.FirstOrDefault();
-
-        //         if (feature?.Symbol == null)
-        //         {
-        //             StatusLabel.Text = "The scene layer returned no feature symbol.";
-        //             return;
-        //         }
-
-        //         SymbolJsonEditor.Text = feature.Symbol.ToJson();
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         StatusLabel.Text = $"Could not extract a scene layer symbol: {ex.Message}";
-        //     }
-        // }
 
         private void OnApplyJsonRendererClicked(object sender, EventArgs e)
         {
@@ -939,10 +743,52 @@ namespace NETGraphicsTester
                     }
                     return;
                 }
-                else
+                PictureFillSymbol pictureFillSymbol = symbol as PictureFillSymbol;
+                if (pictureFillSymbol != null)
                 {
-                    Debug.WriteLine("Symbol cannot be converted to multilayer explicitly");
+                    Debug.WriteLine("Converting to multilayer picture fill symbol");
+                    MultilayerPolygonSymbol multiLayerPolygon = pictureFillSymbol.ToMultilayerSymbol();
+                    for (int i = 0; i < count; i++)
+                    {
+                        graphicsOverlay.Graphics[i].Symbol = multiLayerPolygon;
+                    }
+                    return;
                 }
+                SimpleFillSymbol simpleFillSymbol = symbol as SimpleFillSymbol;
+                if (simpleFillSymbol != null)
+                {
+                    Debug.WriteLine("Converting to multilayer simple fill symbol");
+                    MultilayerPolygonSymbol multiLayerPolygon = simpleFillSymbol.ToMultilayerSymbol();
+                    for (int i = 0; i < count; i++)
+                    {
+                        graphicsOverlay.Graphics[i].Symbol = multiLayerPolygon;
+                    }
+                    return;
+                }
+                SimpleMarkerSymbol simpleMarker = symbol as SimpleMarkerSymbol;
+                if (simpleLine != null)
+                {
+                    Debug.WriteLine("Converting to multilayer marker symbol");
+                    MultilayerPointSymbol multiLayerMarker = simpleMarker.ToMultilayerSymbol();
+                    for (int i = 0; i < count; i++)
+                    {
+                        graphicsOverlay.Graphics[i].Symbol = multiLayerMarker;
+                    }
+                    return;
+                }
+                PictureMarkerSymbol pictureMarker = symbol as PictureMarkerSymbol;
+                if (simpleLine != null)
+                {
+                    Debug.WriteLine("Converting to multilayer picture marker symbol");
+                    MultilayerPointSymbol multiLayerPictureMarker = pictureMarker.ToMultilayerSymbol();
+                    for (int i = 0; i < count; i++)
+                    {
+                        graphicsOverlay.Graphics[i].Symbol = multiLayerPictureMarker;
+                    }
+                    return;
+                }
+                    
+                Debug.WriteLine("Symbol cannot be converted to multilayer explicitly");
 
 
                 for (int i = 0; i < count; i++)
@@ -1047,10 +893,8 @@ namespace NETGraphicsTester
                 await sourceStream.CopyToAsync(destStream);
             }
 
-            //ModelSymbolLayer modelLayer = new ModelSymbolLayer(new Uri(filePath, UriKind.Absolute)) { Height = size, Width = size, Depth = size };
             ModelSymbolLayer modelLayer = new ModelSymbolLayer(new Uri(filePath, UriKind.Absolute));
             await modelLayer.LoadAsync();
-            // MultilayerPointSymbol multilayerSymbol = new MultilayerPointSymbol(new SymbolLayer[] { modelLayer });
             Debug.WriteLine($"{file} default dimensions: height={modelLayer.Height}, width={modelLayer.Width}, depth={modelLayer.Depth}");
 
             MultilayerPointSymbol multilayerSymbol = new MultilayerPointSymbol(new SymbolLayer[] { modelLayer })
@@ -1219,21 +1063,9 @@ namespace NETGraphicsTester
             SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
 
             SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
-            // SymbolStyleSearchParameters searchParams1 = new SymbolStyleSearchParameters();
 
             IList<SymbolStyleSearchResult> styleResults = await _pointSymbols.SearchSymbolsAsync(searchParams);
 
-            //SimpleMarkerSymbol greenTriangle = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Triangle, System.Drawing.Color.Green, 40);
-            //MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1", 100);
-            //MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2", 100);
-            //MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3", 100);
-            //MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4", 100);
-            //MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5", 100);
-            //MultilayerPointSymbol pictureSymbol1 = await createPictureLayerFromFile("1", 100);
-            //MultilayerPointSymbol pictureSymbol2 = await createPictureLayerFromFile("2", 100);
-            //MultilayerPointSymbol pictureSymbol3 = await createPictureLayerFromFile("3", 100);
-            //MultilayerPointSymbol pictureSymbol4 = await createPictureLayerFromFile("4", 100);
-            //MultilayerPointSymbol pictureSymbol5 = await createPictureLayerFromFile("5", 100);
 
             IList<Symbol> symbolList = new List<Symbol>();
 
@@ -1251,53 +1083,9 @@ namespace NETGraphicsTester
                 int symbolCount = symbolList.Count;
 
                 int symbolType = random.Next(1, symbolCount);
-                //string symbolIndex = random.Next(5, 11).ToString();
                 Graphic graphic = graphicsOverlay.Graphics[i];
 
-                //switch (symbolType)
-                //{
-                //    case 1:
-                //        graphic.Symbol = greenTriangle;
-                //        symbolTypeCounts[0]++;
-                //        break;
-                //    case 2:
-                //        MultilayerPointSymbol modelSymbol = symbolIndex switch
-                //        {
-                //            "5" => modelSymbol5,
-                //            "6" => modelSymbol1,
-                //            "7" => modelSymbol2,
-                //            "8" => modelSymbol3,
-                //            "9" => modelSymbol4,
-                //            "10" => modelSymbol5,
-                //            _ => modelSymbol1
-                //        };
-                //        graphic.Symbol = modelSymbol;
-                //        symbolTypeCounts[1]++;
-                //        break;
-                //    case 3:
-                //        MultilayerPointSymbol pictureSymbol = symbolIndex switch
-                //        {
-                //            "5" => pictureSymbol5,
-                //            "6" => pictureSymbol1,
-                //            "7" => pictureSymbol2,
-                //            "8" => pictureSymbol3,
-                //            "9" => pictureSymbol4,
-                //            "10" => pictureSymbol5,
-                //            _ => pictureSymbol1
-                //        };
-                //        graphic.Symbol = pictureSymbol;
-                //        symbolTypeCounts[2]++;
-                //        break;
-                //    default:
-                //        graphic.Symbol = greenTriangle;
-                //        break;
-
-                //}
-
                 Symbol nextUpSymbol = symbolList[symbolType];
-
-                //Symbol multiLayerSym = await styleResults[symbolType].GetSymbolAsync();
-                //Debug.WriteLine($"Found symbol for index {i}: {styleResults[symbolType].Name}");
 
                 try
                 {
@@ -1509,32 +1297,6 @@ namespace NETGraphicsTester
                 StatusLabel.Text = $"Toggled selection for {removeCount} graphics.";
             }
         }
-
-        //private async Task<string> SaveRunTimesCsvAsync(string workflow, double[] runTimes)
-        //{
-        //    string safeWorkflow = string.Join("_", workflow.Split(Path.GetInvalidFileNameChars()));
-        //    if (string.IsNullOrWhiteSpace(safeWorkflow))
-        //    {
-        //        safeWorkflow = "workflow";
-        //    }
-
-        //    string timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
-        //    string fileName = $"run-times-{safeWorkflow}-{timestamp}.csv";
-        //    string filePath = Path.Combine(FileSystem.Current.AppDataDirectory, fileName);
-
-        //    StringBuilder csvBuilder = new StringBuilder();
-        //    csvBuilder.AppendLine("run,time_ms");
-
-        //    for (int i = 0; i < runTimes.Length; i++)
-        //    {
-        //        csvBuilder.Append(i + 1);
-        //        csvBuilder.Append(',');
-        //        csvBuilder.AppendLine(runTimes[i].ToString("0.###", CultureInfo.InvariantCulture));
-        //    }
-
-        //    await File.WriteAllTextAsync(filePath, csvBuilder.ToString());
-        //    return filePath;
-        //}
 
         private async void OnRunAnimationsClicked(object sender, EventArgs e)
         {
