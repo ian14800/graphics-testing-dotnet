@@ -125,7 +125,7 @@ namespace NETGraphicsTester
 
                     //localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
-                    var scene = new Scene(SceneViewingMode.Global, SpatialReferences.Wgs84);
+                    var scene = new Scene(SceneViewingMode.Local, SpatialReferences.Wgs84);
                     var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
 
                     await scene.LoadAsync();
@@ -448,7 +448,7 @@ namespace NETGraphicsTester
                 }
                 operationTimer.Stop();
 
-                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.LongDash, System.Drawing.Color.Black, 100));
+                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.LongDash, System.Drawing.Color.Black, 5));
                 graphicsOverlay.Renderer = lineRenderer;
                 SymbolJsonEditor.Text = lineRenderer.ToJson();
 
@@ -922,16 +922,28 @@ namespace NETGraphicsTester
             {
                 Symbol? symbol = Symbol.FromJson(sizeUp);
 
-                if (symbol != MultilayerSymbol)
-                {
-                    
-                }
-
                 if (symbol == null)
                 {
                     StatusLabel.Text = "Symbol JSON did not produce a symbol.";
                     return;
                 }
+
+                SimpleLineSymbol simpleLine = symbol as SimpleLineSymbol;
+                if (simpleLine != null)
+                {
+                    Debug.WriteLine("Converting to multilayer line symbol");
+                    MultilayerPolylineSymbol multiLayerLine = simpleLine.ToMultilayerSymbol();
+                    for (int i = 0; i < count; i++)
+                    {
+                        graphicsOverlay.Graphics[i].Symbol = multiLayerLine;
+                    }
+                    return;
+                }
+                else
+                {
+                    Debug.WriteLine("Symbol cannot be converted to multilayer explicitly");
+                }
+
 
                 for (int i = 0; i < count; i++)
                 {
