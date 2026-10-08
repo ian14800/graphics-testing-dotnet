@@ -5,7 +5,7 @@
              x:Class="NETGraphicsTester.MainPage"
                                                  BackgroundColor="{AppThemeBinding Light=#F7F7F7, Dark=#0F0F0F}">
 
-                <Grid RowDefinitions="3*,Auto,Auto"
+                <Grid RowDefinitions="*,*,Auto"
           RowSpacing="12"
           Padding="12">
         <Border Grid.Row="0"
@@ -64,7 +64,7 @@
                             <Label Text="Count"
                                    VerticalOptions="Center" />
                             <Entry x:Name="CountEntry"
-                                   Text="25"
+                                   Text="10"
                                    Keyboard="Numeric"
                                    HorizontalOptions="Fill"
                                    ClearButtonVisibility="WhileEditing" />
@@ -205,8 +205,8 @@
                                              Spacing="8">
                             <Editor x:Name="SymbolJsonEditor"
                                     Placeholder="Paste ArcGIS symbol JSON"
-                                    AutoSize="TextChanges"
-                                    MaximumHeightRequest="200" />
+                                    HeightRequest="80"
+                                    AutoSize="Disabled" />
 
                             <Button Text="Apply JSON symbol"
                                     Clicked="OnApplyJsonSymbolClicked" />

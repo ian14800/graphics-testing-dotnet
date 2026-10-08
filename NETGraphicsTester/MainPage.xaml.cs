@@ -5,6 +5,7 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Json.Nodes;
 using Esri.ArcGISRuntime.Data;
 
 namespace NETGraphicsTester
@@ -118,7 +119,8 @@ namespace NETGraphicsTester
 
                     localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
-                    var scene = new Scene(SceneViewingMode.Local, SpatialReferences.Wgs84);
+                    //var scene = new Scene(SceneViewingMode.Local, SpatialReferences.Wgs84);
+                    var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISChartedTerritory);
                     var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
 
                     await scene.LoadAsync();
@@ -344,9 +346,9 @@ namespace NETGraphicsTester
             }
             else if (geomType == "line")
             {
-                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.LongDash, System.Drawing.Color.Black, 5));
+                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Black, 5));
                 graphicsOverlay.Renderer = lineRenderer;
-                SymbolJsonEditor.Text = lineRenderer.ToJson();
+                //SymbolJsonEditor.Text = lineRenderer.ToJson();
                 double xRange = extent.XMax - extent.XMin;
                 double yRange = extent.YMax - extent.YMin;
                 double xStep = xRange / (count - 1);
@@ -390,52 +392,94 @@ namespace NETGraphicsTester
             }
             else if (geomType == "polygon")
             {
-                SimpleRenderer interimRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Orange, null));
-                graphicsOverlay.Renderer = interimRenderer;
-                SymbolJsonEditor.Text = interimRenderer.ToJson();
-                double xRange = extent.XMax - extent.XMin;
-                double yRange = extent.YMax - extent.YMin;
-                double xStep = xRange / (count - 1);
-                double yStep = yRange / (count - 1);
-                for (int i = 0; i < count; i++)
-                {
-                    double currentXMin = extent.XMin + (i * xStep);
-                    double currentXMax = extent.XMin + ((i + 1) * xStep);
-                    // double currentYMin = extent.YMin + (i * yStep);
-                    // double currentYMax = extent.YMin + ((i + 1) * yStep);
+                // SimpleRenderer interimRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Orange, null));
+                // graphicsOverlay.Renderer = interimRenderer;
+                // //SymbolJsonEditor.Text = interimRenderer.ToJson();
+                // double xRange = extent.XMax - extent.XMin;
+                // double yRange = extent.YMax - extent.YMin;
+                // double xStep = xRange / (count - 1);
+                // double yStep = yRange / (count - 1);
+                // for (int i = 0; i < count; i++)
+                // {
+                //     double currentXMin = extent.XMin + (i * xStep);
+                //     double currentXMax = extent.XMin + ((i + 1) * xStep);
+                //     // double currentYMin = extent.YMin + (i * yStep);
+                //     // double currentYMax = extent.YMin + ((i + 1) * yStep);
 
-                    double x1 = currentXMin;
-                    double y1 = extent.YMin;
-                    double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                    MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
+                //     double x1 = currentXMin;
+                //     double y1 = extent.YMin;
+                //     double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                //     MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
 
-                    double x2 = currentXMax;
-                    double y2 = extent.YMin;
-                    double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                    MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
+                //     double x2 = currentXMax;
+                //     double y2 = extent.YMin;
+                //     double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                //     MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
                                         
-                    double x3 = currentXMax;
-                    double y3 = extent.YMax;
-                    double z3 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                    MapPoint point3 = new MapPoint(x3, y3, z3, extent.SpatialReference);
+                //     double x3 = currentXMax;
+                //     double y3 = extent.YMax;
+                //     double z3 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                //     MapPoint point3 = new MapPoint(x3, y3, z3, extent.SpatialReference);
 
-                    Polygon polygon = new Polygon(new MapPoint[] { point1, point2, point3 }, extent.SpatialReference);
+                //     Polygon polygon = new Polygon(new MapPoint[] { point1, point2, point3 }, extent.SpatialReference);
 
-                    Graphic graphic = new Graphic(polygon);
-                    int symbolCount = 8;
-                    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
-                    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                    graphic.Attributes["rotation_value"] = "50";
-                    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                    graphicsOverlay.Graphics.Add(graphic);
-                }
-                operationTimer.Stop();
+                //     Graphic graphic = new Graphic(polygon);
+                //     int symbolCount = 8;
+                //     graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                //     graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                //     graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                //     graphic.Attributes["rotation_value"] = "50";
+                //     graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                //     graphicsOverlay.Graphics.Add(graphic);
+                // }
 
-                if (updateUi)
+                try
                 {
-                    EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                    StatusLabel.Text = $"Added {count} polygon graphics.";
+                    using var sourceStream = await FileSystem.OpenAppPackageFileAsync("SF_polygons.json");
+                    using var reader = new StreamReader(sourceStream);
+                    JsonNode? featureSet = JsonNode.Parse(await reader.ReadToEndAsync());
+                    JsonArray? features = featureSet?["features"]?.AsArray();
+                    JsonNode? spatialReference = featureSet?["spatialReference"];
+                    if (features == null || spatialReference == null)
+                    {
+                        throw new InvalidDataException("The polygon JSON is missing features or a spatial reference.");
+                    }
+
+                    int polygonCount = Math.Min(count, features.Count);
+                    for (int i = 0; i < polygonCount; i++)
+                    {
+                        if (features[i]?["geometry"]?.DeepClone() is not JsonObject geometryJson)
+                        {
+                            continue;
+                        }
+
+                        geometryJson["spatialReference"] = spatialReference.DeepClone();
+                        Geometry geometry = Geometry.FromJson(geometryJson.ToJsonString());
+                        var fillColor = System.Drawing.Color.FromArgb(
+                            random.Next(40, 231),
+                            random.Next(40, 231),
+                            random.Next(40, 231));
+                        var graphic = new Graphic(geometry)
+                        {
+                            Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, fillColor, null)
+                        };
+                        graphicsOverlay.Graphics.Add(graphic);
+                    }
+
+                    operationTimer.Stop();
+                    if (updateUi)
+                    {
+                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                        StatusLabel.Text = $"Added {polygonCount} polygon graphics.";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    operationTimer.Stop();
+                    if (updateUi)
+                    {
+                        StatusLabel.Text = $"Polygon operation failed: {ex.Message}";
+                    }
                 }
             }
         }
