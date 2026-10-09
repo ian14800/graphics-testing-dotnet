@@ -117,7 +117,7 @@ namespace NETGraphicsTester
                         return;
                     }
 
-                    localSceneView.WarningsChanged += SceneView_WarningsChanged;
+                    //localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
                     //var scene = new Scene(SceneViewingMode.Local, SpatialReferences.Wgs84);
                     var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISChartedTerritory);
@@ -348,7 +348,28 @@ namespace NETGraphicsTester
             {
                 SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Black, 5));
                 graphicsOverlay.Renderer = lineRenderer;
-                //SymbolJsonEditor.Text = lineRenderer.ToJson();
+
+                //MapPoint[] points = new MapPoint[count];
+
+                //for (int i = 0; i < count; i++)
+                //{
+                //    double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                //    double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                //    double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                //    MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
+
+                //    points[i] = point;
+                //}
+                //Polyline line = new Polyline(points, extent.SpatialReference);
+                //Graphic graphic = new Graphic(line);
+                //graphicsOverlay.Graphics.Add(graphic);
+                //drawClock.Stop();
+                //if (updateUi)
+                //{
+                //    DrawTimer.Text = $"{drawClock.ElapsedMilliseconds} ms // draw time";
+                //}
+
+                SymbolJsonEditor.Text = lineRenderer.ToJson();
                 double xRange = extent.XMax - extent.XMin;
                 double yRange = extent.YMax - extent.YMin;
                 double xStep = xRange / (count - 1);
@@ -384,11 +405,11 @@ namespace NETGraphicsTester
                 }
                 operationTimer.Stop();
 
-                if (updateUi)
-                {
-                    EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                    StatusLabel.Text = $"Added {count} line graphics.";
-                }
+                    if (updateUi)
+                    {
+                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                        StatusLabel.Text = $"Added {count} line graphics.";
+                    }
             }
             else if (geomType == "polygon")
             {
@@ -435,42 +456,60 @@ namespace NETGraphicsTester
 
                 try
                 {
-                    using var sourceStream = await FileSystem.OpenAppPackageFileAsync("SF_polygons.json");
-                    using var reader = new StreamReader(sourceStream);
-                    JsonNode? featureSet = JsonNode.Parse(await reader.ReadToEndAsync());
-                    JsonArray? features = featureSet?["features"]?.AsArray();
-                    JsonNode? spatialReference = featureSet?["spatialReference"];
-                    if (features == null || spatialReference == null)
-                    {
-                        throw new InvalidDataException("The polygon JSON is missing features or a spatial reference.");
-                    }
+                    SimpleRenderer polygonRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Purple, new SimpleLineSymbol(SimpleLineSymbolStyle.Dash, System.Drawing.Color.Black, 2)));
+                    graphicsOverlay.Renderer = polygonRenderer;
 
-                    int polygonCount = Math.Min(count, features.Count);
-                    for (int i = 0; i < polygonCount; i++)
-                    {
-                        if (features[i]?["geometry"]?.DeepClone() is not JsonObject geometryJson)
-                        {
-                            continue;
-                        }
+                    MapPoint[] points = new MapPoint[count];
 
-                        geometryJson["spatialReference"] = spatialReference.DeepClone();
-                        Geometry geometry = Geometry.FromJson(geometryJson.ToJsonString());
-                        var fillColor = System.Drawing.Color.FromArgb(
-                            random.Next(40, 231),
-                            random.Next(40, 231),
-                            random.Next(40, 231));
-                        var graphic = new Graphic(geometry)
-                        {
-                            Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, fillColor, null)
-                        };
-                        graphicsOverlay.Graphics.Add(graphic);
+                    for (int i = 0; i < count; i++)
+                    {
+                        double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                        double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                        MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
+
+                        points[i] = point;
                     }
+                    Polygon polygon = new Polygon(points, extent.SpatialReference);
+                    Graphic graphic = new Graphic(polygon);
+                    graphicsOverlay.Graphics.Add(graphic);
+
+                    // using var sourceStream = await FileSystem.OpenAppPackageFileAsync("SF_polygons.json");
+                    // using var reader = new StreamReader(sourceStream);
+                    // JsonNode? featureSet = JsonNode.Parse(await reader.ReadToEndAsync());
+                    // JsonArray? features = featureSet?["features"]?.AsArray();
+                    // JsonNode? spatialReference = featureSet?["spatialReference"];
+                    // if (features == null || spatialReference == null)
+                    // {
+                    //     throw new InvalidDataException("The polygon JSON is missing features or a spatial reference.");
+                    // }
+
+                    // int polygonCount = Math.Min(count, features.Count);
+                    // for (int i = 0; i < polygonCount; i++)
+                    // {
+                    //     if (features[i]?["geometry"]?.DeepClone() is not JsonObject geometryJson)
+                    //     {
+                    //         continue;
+                    //     }
+
+                    //     geometryJson["spatialReference"] = spatialReference.DeepClone();
+                    //     Geometry geometry = Geometry.FromJson(geometryJson.ToJsonString());
+                    //     var fillColor = System.Drawing.Color.FromArgb(
+                    //         random.Next(40, 231),
+                    //         random.Next(40, 231),
+                    //         random.Next(40, 231));
+                    //     var graphic = new Graphic(geometry)
+                    //     {
+                    //         Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, fillColor, null)
+                    //     };
+                    //     graphicsOverlay.Graphics.Add(graphic);
+                    // }
 
                     operationTimer.Stop();
                     if (updateUi)
                     {
                         EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                        StatusLabel.Text = $"Added {polygonCount} polygon graphics.";
+                        StatusLabel.Text = $"Added {count} vertex polygon graphic.";
                     }
                 }
                 catch (Exception ex)
@@ -1453,8 +1492,10 @@ namespace NETGraphicsTester
                     string rotation_value = GetAttributeString(identifiedGraphic, "rotation_value");
                     string color_value = GetAttributeString(identifiedGraphic, "color_value");
 
+                    identifiedGraphic.IsSelected = true;
+
                     StatusLabel.Text = $"Identified graphic: class_value: {class_value}, {size_value}, {transparency_value}, {rotation_value}, {color_value}";
-                    ShowIdentifyEditorForGraphic(identifiedGraphic);
+                    //ShowIdentifyEditorForGraphic(identifiedGraphic);
                 }
                 else
                 {
