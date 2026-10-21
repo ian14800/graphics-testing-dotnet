@@ -1546,8 +1546,8 @@ namespace NETGraphicsTester
 
         private async void OnSceneViewTapped(object? sender, Esri.ArcGISRuntime.Maui.GeoViewInputEventArgs e)
         {
-            double tolerance = 20.0;
-            int maximumResults = 1;
+            double tolerance = 10.0;
+            int maximumResults = 5;
             bool onlyReturnPopups = false;
 
             try
@@ -1563,15 +1563,14 @@ namespace NETGraphicsTester
                 {
                     Graphic identifiedGraphic = identifyResult.Graphics.First();
 
-                    string class_value = GetAttributeString(identifiedGraphic, "class_value");
-                    string size_value = GetAttributeString(identifiedGraphic, "size_value");
-                    string transparency_value = GetAttributeString(identifiedGraphic, "transparency_value");
-                    string rotation_value = GetAttributeString(identifiedGraphic, "rotation_value");
-                    string color_value = GetAttributeString(identifiedGraphic, "color_value");
+                    identifiedGraphic.IsSelected = !identifiedGraphic.IsSelected;
 
-                    identifiedGraphic.IsSelected = true;
-
-                    StatusLabel.Text = $"Identified graphic: class_value: {class_value}, {size_value}, {transparency_value}, {rotation_value}, {color_value}";
+                    //string class_value = GetAttributeString(identifiedGraphic, "class_value");
+                    //string size_value = GetAttributeString(identifiedGraphic, "size_value");
+                    //string transparency_value = GetAttributeString(identifiedGraphic, "transparency_value");
+                    //string rotation_value = GetAttributeString(identifiedGraphic, "rotation_value");
+                    //string color_value = GetAttributeString(identifiedGraphic, "color_value");
+                    //StatusLabel.Text = $"Identified graphic: class_value: {class_value}";
                     //ShowIdentifyEditorForGraphic(identifiedGraphic);
                 }
                 else
