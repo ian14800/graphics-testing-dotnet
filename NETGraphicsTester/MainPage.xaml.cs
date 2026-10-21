@@ -195,7 +195,7 @@ namespace NETGraphicsTester
                 switch(currentScene)
                 {
                     case "Heavy":
-                        sceneId = "f73dbfe2be684cc6a219b7e988c12516";
+                        sceneId = "7111c1efcaf54e5d8e57946d2a8d8933";
                         break;
                     case "Medium":
                         sceneId = "e2b55641585d483b8bcef895acf0f934";
@@ -377,14 +377,38 @@ namespace NETGraphicsTester
                     graphicsOverlay.Renderer = pointRenderer;
                     SymbolJsonEditor.Text = pointRenderer.ToJson();
                     for (int i = 0; i < count; i++)
+                    //{
+                    //    MapPoint[] points = new MapPoint[5];
+                    //    double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                    //    double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                    //    for (int j = 0; j < 5; j++) 
+                    //    {
+                    //        stage = $"constructing multipoint {i + 1}/{count}";
+                    //        double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    //        MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
+
+                    //        points[j] = point;
+                    //    }
+                    //    Multipoint multipoint = new Multipoint(points);
+                    //    Graphic graphic = new Graphic(multipoint);
+                    //    int symbolCount = 57;
+                    //    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                    //    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                    //    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                    //    graphic.Attributes["rotation_value"] = "50";
+                    //    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                    //    stage = $"adding point {i + 1}/{count}";
+                    //    graphicsOverlay.Graphics.Add(graphic);
+                    //}
                     {
                         MapPoint[] points = new MapPoint[5];
-                        for (int j = 0; j < 5; j++) 
+                        for (int j = 0; j < 5; j++)
                         {
                             stage = $"constructing multipoint {i + 1}/{count}";
                             double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
                             double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                            double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                            //double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                            double z = baseZ;
                             MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
 
                             points[j] = point;
@@ -399,6 +423,11 @@ namespace NETGraphicsTester
                         graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
                         stage = $"adding point {i + 1}/{count}";
                         graphicsOverlay.Graphics.Add(graphic);
+
+                        foreach (MapPoint point in points)
+                        {
+                            Debug.WriteLine($"Submitting point: {point.X}, {point.Y}, {point.Z}");
+                        }
                     }
 
                 }
@@ -421,7 +450,7 @@ namespace NETGraphicsTester
             }
             else if (geomType == "line")
             {
-                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.DashDotDot, System.Drawing.Color.Black, 5));
+                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Null, System.Drawing.Color.Black, 5));
                 graphicsOverlay.Renderer = lineRenderer;
                 SymbolJsonEditor.Text = lineRenderer.ToJson();
 
@@ -596,6 +625,18 @@ namespace NETGraphicsTester
                     {
                         StatusLabel.Text = $"Polygon operation failed: {ex.Message}";
                     }
+                }
+
+
+            }
+            Graphic lastAdded = graphicsOverlay.Graphics.Last();
+            if (lastAdded.Geometry is Multipoint lastAddedGeom)
+            {
+                List<MapPoint> lastAddedPoints = lastAddedGeom.Points.ToList();
+
+                foreach (MapPoint point in lastAddedPoints)
+                {
+                    Debug.WriteLine($"Final point: {point.X}, {point.Y}, {point.Z}");
                 }
             }
         }
@@ -1117,15 +1158,9 @@ namespace NETGraphicsTester
             {
                 Graphic graphic = graphicsOverlay.Graphics[i];
 
-                if (graphic.Geometry is MapPoint currentPoint)
+                if (graphic.Geometry is Geometry geometry && !geometry.IsEmpty)
                 {
-                    MapPoint movedPoint = new MapPoint(
-                        currentPoint.X + dx,
-                        currentPoint.Y + dy,
-                        currentPoint.Z + dz,
-                        currentPoint.SpatialReference);
-
-                    graphic.Geometry = movedPoint;
+                    graphic.Geometry = GeometryEngine.Move(geometry, dx, dy);
                 }
             }
 
@@ -1133,7 +1168,7 @@ namespace NETGraphicsTester
             if (updateUi)
             {
                 EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                StatusLabel.Text = $"Moved {graphicsToMove} graphics by ({dx:0}, {dy:0}, {dz:0}).";
+                StatusLabel.Text = $"Moved {graphicsToMove} graphics by ({dx:0}, {dy:0}).";
             }
         }
 
@@ -1181,6 +1216,36 @@ namespace NETGraphicsTester
                         currentPoint.SpatialReference);
 
                     graphic.Geometry = movedPoint;
+                } else if (graphic.Geometry is Multipoint multipoint)
+                {
+                    int new_count = random.Next(3, 10);
+                    List<MapPoint> originalPoints = multipoint.Points.ToList();
+
+                    if (originalPoints.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    List<MapPoint> newPoints = new List<MapPoint>(new_count);
+
+                    for (int pointIndex = 0; pointIndex < new_count; pointIndex++)
+                    {
+                        MapPoint sourcePoint = pointIndex < originalPoints.Count
+                            ? originalPoints[pointIndex]
+                            : originalPoints[random.Next(originalPoints.Count)];
+                        
+                        double pdx = random.Next(-100, 100);
+                        double pdy = random.Next(-100, 100);
+                        double pdz = random.Next(-100, 100);
+
+                        newPoints.Add(new MapPoint(
+                            sourcePoint.X + pdx,
+                            sourcePoint.Y + pdy,
+                            sourcePoint.Z + pdz,
+                            sourcePoint.SpatialReference));
+                    }
+
+                    graphic.Geometry = new Multipoint(newPoints, multipoint.SpatialReference);  
                 }
             }
 
