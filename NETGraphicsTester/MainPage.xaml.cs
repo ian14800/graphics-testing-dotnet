@@ -123,6 +123,19 @@ namespace NETGraphicsTester
                     var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISChartedTerritory);
                     var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
 
+
+                    string _elevationServiceUrl = "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
+                    Surface elevationSurface = new Surface();
+                    ArcGISTiledElevationSource elevationSource = new ArcGISTiledElevationSource(new Uri(_elevationServiceUrl));
+                    elevationSurface.ElevationSources.Add(elevationSource);
+                    scene.BaseSurface = elevationSurface;
+
+
+                    TerrainSlider.ValueChanged += (sender, e) =>
+                    {
+                        scene.BaseSurface.ElevationExaggeration = TerrainSlider.Value;
+                    };
+
                     await scene.LoadAsync();
 
                     scene.BaseSurface.NavigationConstraint = NavigationConstraint.None;
@@ -182,13 +195,13 @@ namespace NETGraphicsTester
                 switch(currentScene)
                 {
                     case "Heavy":
-                        sceneId = "9851fee6ec0544e0a0c2884d2297c349";
+                        sceneId = "f73dbfe2be684cc6a219b7e988c12516";
                         break;
                     case "Medium":
-                        sceneId = "e10369820fa04866a16338cce14c0f36";
+                        sceneId = "e2b55641585d483b8bcef895acf0f934";
                         break;
                     case "Light":
-                        sceneId = "3023142800a64ea1b6ec3459c05c9ac0";
+                        sceneId = "b74672615e1842f697d31438ff467d23";
                         break;
                     default:
                         sceneId = "3023142800a64ea1b6ec3459c05c9ac0";
@@ -202,6 +215,11 @@ namespace NETGraphicsTester
                     PortalItem sceneItem = await PortalItem.CreateAsync(portal, sceneId);
 
                     Scene scene = new Scene(sceneItem);
+
+                    TerrainSlider.ValueChanged += (sender, e) =>
+                    {
+                        scene.BaseSurface.ElevationExaggeration = TerrainSlider.Value;
+                    };
 
                     sceneView.Scene = scene;
                 } catch (Exception ex)
@@ -236,6 +254,11 @@ namespace NETGraphicsTester
         private async void OnAddPointGraphicsClicked(object sender, EventArgs e)
         {
             await AddGraphicsOperation(updateUi: true, geomType: "point");
+        }
+
+        private async void OnAddMultipointGraphicsClicked(object sender, EventArgs e)
+        {
+            await AddGraphicsOperation(updateUi: true, geomType: "multipoint");
         }
 
         private static void LogGraphicsDiagnostic(string message)
@@ -344,72 +367,125 @@ namespace NETGraphicsTester
                     }
                 }
             }
-            else if (geomType == "line")
+            if (geomType == "multipoint")
             {
-                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Black, 5));
-                graphicsOverlay.Renderer = lineRenderer;
-
-                //MapPoint[] points = new MapPoint[count];
-
-                //for (int i = 0; i < count; i++)
-                //{
-                //    double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                //    double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                //    double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                //    MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
-
-                //    points[i] = point;
-                //}
-                //Polyline line = new Polyline(points, extent.SpatialReference);
-                //Graphic graphic = new Graphic(line);
-                //graphicsOverlay.Graphics.Add(graphic);
-                //drawClock.Stop();
-                //if (updateUi)
-                //{
-                //    DrawTimer.Text = $"{drawClock.ElapsedMilliseconds} ms // draw time";
-                //}
-
-                SymbolJsonEditor.Text = lineRenderer.ToJson();
-                double xRange = extent.XMax - extent.XMin;
-                double yRange = extent.YMax - extent.YMin;
-                double xStep = xRange / (count - 1);
-                double yStep = yRange / (count - 1);
-                for (int i = 0; i < count; i++)
+                string stage = "starting point graphics";
+                int originalCount = graphicsOverlay.Graphics.Count;
+                try
                 {
+                    SimpleRenderer pointRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 10));
+                    graphicsOverlay.Renderer = pointRenderer;
+                    SymbolJsonEditor.Text = pointRenderer.ToJson();
+                    for (int i = 0; i < count; i++)
+                    {
+                        MapPoint[] points = new MapPoint[5];
+                        for (int j = 0; j < 5; j++) 
+                        {
+                            stage = $"constructing multipoint {i + 1}/{count}";
+                            double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                            double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                            double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                            MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
 
-                    double currentXMin = extent.XMin + (i * xStep);
-                    double currentXMax = extent.XMin + ((i + 1) * xStep);
-                    // double currentYMin = extent.YMin + (i * yStep);
-                    // double currentYMax = extent.YMin + ((i + 1) * yStep);
+                            points[j] = point;
+                        }
+                        Multipoint multipoint = new Multipoint(points);
+                        Graphic graphic = new Graphic(multipoint);
+                        int symbolCount = 57;
+                        graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                        graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                        graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                        graphic.Attributes["rotation_value"] = "50";
+                        graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                        stage = $"adding point {i + 1}/{count}";
+                        graphicsOverlay.Graphics.Add(graphic);
+                    }
 
-                    double x1 = currentXMin;
-                    double y1 = extent.YMin;
-                    double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                    MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
-
-                    double x2 = currentXMax;
-                    double y2 = extent.YMax;
-                    double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                    MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
-
-                    Polyline line = new Polyline(new MapPoint[] { point1, point2 }, extent.SpatialReference);
-
-                    Graphic graphic = new Graphic(line);
-                    int symbolCount = 33;
-                    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
-                    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                    graphic.Attributes["rotation_value"] = "50";
-                    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                    graphicsOverlay.Graphics.Add(graphic);
                 }
-                operationTimer.Stop();
-
+                catch (Exception ex)
+                {
+                    drawClock.Stop();
+                    if (updateUi)
+                    {
+                        StatusLabel.Text = $"Point operation failed at {stage}: {ex.Message}";
+                    }
+                }
+                finally
+                {
+                    operationTimer.Stop();
                     if (updateUi)
                     {
                         EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                        StatusLabel.Text = $"Added {count} line graphics.";
                     }
+                }
+            }
+            else if (geomType == "line")
+            {
+                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.DashDotDot, System.Drawing.Color.Black, 5));
+                graphicsOverlay.Renderer = lineRenderer;
+                SymbolJsonEditor.Text = lineRenderer.ToJson();
+
+                MapPoint[] points = new MapPoint[count];
+
+                for (int i = 0; i < count; i++)
+                {
+                    double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                    double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                    double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
+
+                    points[i] = point;
+                }
+                Polyline line = new Polyline(points, extent.SpatialReference);
+                Graphic graphic = new Graphic(line);
+                graphicsOverlay.Graphics.Add(graphic);
+                drawClock.Stop();
+                if (updateUi)
+                {
+                    DrawTimer.Text = $"{drawClock.ElapsedMilliseconds} ms // draw time";
+                }
+
+                //SymbolJsonEditor.Text = lineRenderer.ToJson();
+                //double xRange = extent.XMax - extent.XMin;
+                //double yRange = extent.YMax - extent.YMin;
+                //double xStep = xRange / (count - 1);
+                //double yStep = yRange / (count - 1);
+                //for (int i = 0; i < count; i++)
+                //{
+
+                //    double currentXMin = extent.XMin + (i * xStep);
+                //    double currentXMax = extent.XMin + ((i + 1) * xStep);
+                //    // double currentYMin = extent.YMin + (i * yStep);
+                //    // double currentYMax = extent.YMin + ((i + 1) * yStep);
+
+                //    double x1 = currentXMin;
+                //    double y1 = extent.YMin;
+                //    double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                //    MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
+
+                //    double x2 = currentXMax;
+                //    double y2 = extent.YMax;
+                //    double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                //    MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
+
+                //    Polyline line = new Polyline(new MapPoint[] { point1, point2 }, extent.SpatialReference);
+
+                //    Graphic graphic = new Graphic(line);
+                //    int symbolCount = 33;
+                //    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                //    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                //    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                //    graphic.Attributes["rotation_value"] = "50";
+                //    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                //    graphicsOverlay.Graphics.Add(graphic);
+                //}
+                //operationTimer.Stop();
+
+                //if (updateUi)
+                //{
+                //    EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
+                //    StatusLabel.Text = $"Added {count} line graphics.";
+                //}
             }
             else if (geomType == "polygon")
             {
@@ -456,8 +532,9 @@ namespace NETGraphicsTester
 
                 try
                 {
-                    SimpleRenderer polygonRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Purple, new SimpleLineSymbol(SimpleLineSymbolStyle.Dash, System.Drawing.Color.Black, 2)));
+                    SimpleRenderer polygonRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Purple, new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Black, 2)));
                     graphicsOverlay.Renderer = polygonRenderer;
+                    SymbolJsonEditor.Text = polygonRenderer.ToJson();
 
                     MapPoint[] points = new MapPoint[count];
 
@@ -1413,11 +1490,11 @@ namespace NETGraphicsTester
                         case "Move graphics (random)":
                             MoveGraphicsRandomOperation(updateUi: false);
                             break;
-                        // case "Swap renderer":
-                        //     await SwapRendererOperationAsync(updateUi: false);
-                        //     break;
-                        case "Add symbols":
-                            await AddSymbolsOperationAsync(updateUi: false);
+                        case "Add lines":
+                            await AddGraphicsOperation(false, "line");
+                            break;
+                        case "Add polygons":
+                            await AddGraphicsOperation(updateUi: false, "polygon");
                             break;
                         case "Add/remove overlay":
                             RemoveOverlayOperation(updateUi: false);

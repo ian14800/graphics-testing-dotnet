@@ -99,6 +99,14 @@
                         </Picker.ItemsSource>
                         </Picker>
 
+                        <Slider x:Name="TerrainSlider"
+                            Margin="0,0,5,0"
+                            Maximum="6"
+                            MaximumTrackColor="CadetBlue"
+                            Minimum="1"
+                            MinimumTrackColor="CadetBlue"
+                            Value="1" />
+
                         <VerticalStackLayout x:Name="JsonRendererPanel"
                                         IsVisible="False"
                                         Spacing="8">
@@ -109,6 +117,8 @@
 
                         <Button Text="Apply JSON renderer"
                                 Clicked="OnApplyJsonRendererClicked" />
+
+                        
                         </VerticalStackLayout>
                     </VerticalStackLayout>                    
                 </Border>
@@ -140,6 +150,8 @@
                             <VerticalStackLayout Spacing="8">
                                 <Button Text="Add points"
                                         Clicked="OnAddPointGraphicsClicked" />
+                                <Button Text="Add multipoints"
+                                        Clicked="OnAddMultipointGraphicsClicked" />
                                 <Button Text="Add lines"
                                         Clicked="OnAddLineGraphicsClicked" />
                                 <Button Text="Add polygons"
@@ -190,8 +202,8 @@
                                 <x:Array Type="{x:Type x:String}">
                                     <x:String>Move graphics (uniform)</x:String>
                                     <x:String>Move graphics (random)</x:String>
-                                    <x:String>Swap renderer</x:String>
-                                    <x:String>Add symbols</x:String>
+                                    <x:String>Add lines</x:String>
+                                    <x:String>Add polygons</x:String>
                                     <x:String>Add/remove overlay</x:String>
                                     <x:String>Add/move/remove</x:String>
                                     <x:String>Add/give symbols/remove</x:String>
