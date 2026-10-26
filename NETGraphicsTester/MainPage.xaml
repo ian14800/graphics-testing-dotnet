@@ -21,7 +21,7 @@
                                                 Margin="12"
                                                 ZIndex="2"
                                                 SelectedIndexChanged="OnScenePickerSelectionChanged">
-                                        <Picker.ItemsSource>
+                                        <Picker.ItemsSource> 
                                                 <x:Array Type="{x:Type x:String}">
                                                 <x:String>Blank</x:String>
                                                 <x:String>Light</x:String>
@@ -79,6 +79,14 @@
                                    HorizontalOptions="Fill"
                                    ClearButtonVisibility="WhileEditing" />
                         </HorizontalStackLayout>
+                           <HorizontalStackLayout Spacing="8"
+                                                     VerticalOptions="Center">
+                                <CheckBox x:Name="ShowIdentifyPopupCheckBox"
+                                           IsChecked="False"
+                                           CheckedChanged="OnIdentifyPopupPreferenceChanged" />
+                                <Label Text="Show identify popup"
+                                        VerticalOptions="Center" />
+                           </HorizontalStackLayout>
 
                         <Label Text="Renderer" FontAttributes="Bold" />
 
@@ -99,6 +107,18 @@
                         </Picker.ItemsSource>
                         </Picker>
 
+
+                        <VerticalStackLayout x:Name="JsonRendererPanel"
+                                        IsVisible="False"
+                                        Spacing="8">
+                        <Button Text="Apply JSON renderer"
+                                Clicked="OnApplyJsonRendererClicked" />
+                        <Editor x:Name="RendererJsonEditor"
+                                Placeholder="Paste ArcGIS renderer JSON"
+                                AutoSize="TextChanges"
+                                MaximumHeightRequest="200" />
+
+
                         <Slider x:Name="TerrainSlider"
                             Margin="0,0,5,0"
                             Maximum="6"
@@ -106,18 +126,6 @@
                             Minimum="1"
                             MinimumTrackColor="CadetBlue"
                             Value="1" />
-
-                        <VerticalStackLayout x:Name="JsonRendererPanel"
-                                        IsVisible="False"
-                                        Spacing="8">
-                        <Editor x:Name="RendererJsonEditor"
-                                Placeholder="Paste ArcGIS renderer JSON"
-                                AutoSize="TextChanges"
-                                MaximumHeightRequest="200" />
-
-                        <Button Text="Apply JSON renderer"
-                                Clicked="OnApplyJsonRendererClicked" />
-
                         
                         </VerticalStackLayout>
                     </VerticalStackLayout>                    

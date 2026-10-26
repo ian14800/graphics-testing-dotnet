@@ -138,10 +138,17 @@ namespace NETGraphicsTester
 
                     await scene.LoadAsync();
 
+                    // var extent = new Envelope(
+                    //     -122.53, 37.70, -122.35, 37.82,
+                    //     SpatialReferences.Wgs84);
+
+                    // scene.ClippingArea = extent;
+                    // scene.IsClippingEnabled = true;
+
                     scene.BaseSurface.NavigationConstraint = NavigationConstraint.None;
 
                     localSceneView.Scene = scene;
-                    
+
                     if (initialSetup)
                     {
                         graphicsOverlay.Renderer = redCircle;
@@ -335,12 +342,13 @@ namespace NETGraphicsTester
                         MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
 
                         Graphic graphic = new Graphic(point);
-                        int symbolCount = 57;
+                        int symbolCount = 11;
                         graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
                         graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
                         graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
                         graphic.Attributes["rotation_value"] = "50";
                         graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                        graphic.Attributes["NOTES"] = random.Next(0, 11);
                         stage = $"adding point {i + 1}/{count}";
                         if (i == 0 || i == count - 1)
                         {
@@ -377,38 +385,14 @@ namespace NETGraphicsTester
                     graphicsOverlay.Renderer = pointRenderer;
                     SymbolJsonEditor.Text = pointRenderer.ToJson();
                     for (int i = 0; i < count; i++)
-                    //{
-                    //    MapPoint[] points = new MapPoint[5];
-                    //    double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                    //    double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                    //    for (int j = 0; j < 5; j++) 
-                    //    {
-                    //        stage = $"constructing multipoint {i + 1}/{count}";
-                    //        double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                    //        MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
-
-                    //        points[j] = point;
-                    //    }
-                    //    Multipoint multipoint = new Multipoint(points);
-                    //    Graphic graphic = new Graphic(multipoint);
-                    //    int symbolCount = 57;
-                    //    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
-                    //    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                    //    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                    //    graphic.Attributes["rotation_value"] = "50";
-                    //    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                    //    stage = $"adding point {i + 1}/{count}";
-                    //    graphicsOverlay.Graphics.Add(graphic);
-                    //}
                     {
                         MapPoint[] points = new MapPoint[5];
+                        double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                        double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
                         for (int j = 0; j < 5; j++)
                         {
                             stage = $"constructing multipoint {i + 1}/{count}";
-                            double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                            double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                            //double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                            double z = baseZ;
+                            double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
                             MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
 
                             points[j] = point;
@@ -423,12 +407,64 @@ namespace NETGraphicsTester
                         graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
                         stage = $"adding point {i + 1}/{count}";
                         graphicsOverlay.Graphics.Add(graphic);
-
-                        foreach (MapPoint point in points)
-                        {
-                            Debug.WriteLine($"Submitting point: {point.X}, {point.Y}, {point.Z}");
-                        }
                     }
+                    //{
+                    //    MapPoint[] points = new MapPoint[5];
+                    //    for (int j = 0; j < 5; j++)
+                    //    {
+                    //        stage = $"constructing multipoint {i + 1}/{count}";
+                    //        double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                    //        double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                    //        //double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                    //        double z = baseZ;
+
+                    //        SpatialReference spatialReference;
+                    //        int spatialReferenceIndex = random.Next(0, 5);
+
+                    //        switch (spatialReferenceIndex)
+                    //        {
+                    //            case 0:
+                    //                spatialReference = SpatialReferences.Wgs84;
+                    //                break;
+                    //            case 1:
+                    //                spatialReference = SpatialReferences.WebMercator;
+                    //                break;
+                    //            case 2:
+                    //                spatialReference = SpatialReference.Create(4269);
+                    //                break;
+                    //            case 3:
+                    //                spatialReference = SpatialReference.Create(4490);
+                    //                break;
+                    //            case 4:
+                    //                spatialReference = SpatialReference.Create(3035);
+                    //                break;
+                    //            default:
+                    //                spatialReference = extent.SpatialReference;
+                    //                break;
+                    //        }
+
+                    //        MapPoint point = new MapPoint(x, y, z, spatialReference);
+
+                    //        Debug.WriteLine($"Adding point {x}, {y}, {spatialReference.WkText}");
+
+                    //        points[j] = point;
+                    //    }
+                    //    Multipoint multipoint = new Multipoint(points);
+                    //    Graphic graphic = new Graphic(multipoint);
+                    //    int symbolCount = 57;
+                    //    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
+                    //    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
+                    //    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
+                    //    graphic.Attributes["rotation_value"] = "50";
+                    //    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                    //    stage = $"adding point {i + 1}/{count}";
+                    //    graphicsOverlay.Graphics.Add(graphic);
+
+                    //    //foreach (MapPoint point in points)
+                    //    //{
+                    //    //    Debug.WriteLine($"Submitting point: {point.X}, {point.Y}, {point.Z}");
+                    //    //}
+                    //}
 
                 }
                 catch (Exception ex)
@@ -450,7 +486,7 @@ namespace NETGraphicsTester
             }
             else if (geomType == "line")
             {
-                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Null, System.Drawing.Color.Black, 5));
+                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Dash, System.Drawing.Color.Black, 5));
                 graphicsOverlay.Renderer = lineRenderer;
                 SymbolJsonEditor.Text = lineRenderer.ToJson();
 
@@ -629,16 +665,16 @@ namespace NETGraphicsTester
 
 
             }
-            Graphic lastAdded = graphicsOverlay.Graphics.Last();
-            if (lastAdded.Geometry is Multipoint lastAddedGeom)
-            {
-                List<MapPoint> lastAddedPoints = lastAddedGeom.Points.ToList();
+            //Graphic lastAdded = graphicsOverlay.Graphics.Last();
+            //if (lastAdded.Geometry is Multipoint lastAddedGeom)
+            //{
+            //    List<MapPoint> lastAddedPoints = lastAddedGeom.Points.ToList();
 
-                foreach (MapPoint point in lastAddedPoints)
-                {
-                    Debug.WriteLine($"Final point: {point.X}, {point.Y}, {point.Z}");
-                }
-            }
+            //    foreach (MapPoint point in lastAddedPoints)
+            //    {
+            //        Debug.WriteLine($"Final point: {point.X}, {point.Y}, {point.Z}");
+            //    }
+            //}
         }
 
         private void OnRemoveGraphicsClicked(object sender, EventArgs e)
@@ -820,7 +856,7 @@ namespace NETGraphicsTester
                     }
                     break;
                 case 4:
-                    string symbolFilePath = "MinShipSymbols_round1_points.stylx";
+                    string symbolFilePath = "TextSymbols.stylx";
                     SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
 
                     SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
@@ -1628,15 +1664,16 @@ namespace NETGraphicsTester
                 {
                     Graphic identifiedGraphic = identifyResult.Graphics.First();
 
-                    identifiedGraphic.IsSelected = !identifiedGraphic.IsSelected;
-
-                    //string class_value = GetAttributeString(identifiedGraphic, "class_value");
-                    //string size_value = GetAttributeString(identifiedGraphic, "size_value");
-                    //string transparency_value = GetAttributeString(identifiedGraphic, "transparency_value");
-                    //string rotation_value = GetAttributeString(identifiedGraphic, "rotation_value");
-                    //string color_value = GetAttributeString(identifiedGraphic, "color_value");
-                    //StatusLabel.Text = $"Identified graphic: class_value: {class_value}";
-                    //ShowIdentifyEditorForGraphic(identifiedGraphic);
+                    if (ShowIdentifyPopupCheckBox.IsChecked)
+                    {
+                        ShowIdentifyEditorForGraphic(identifiedGraphic);
+                    }
+                    else
+                    {
+                        identifiedGraphic.IsSelected = !identifiedGraphic.IsSelected;
+                        currentlyIdentifiedGraphic = null;
+                        IdentifyPopupOverlay.IsVisible = false;
+                    }
                 }
                 else
                 {
@@ -1707,6 +1744,15 @@ namespace NETGraphicsTester
             RotationValueEntry.Text = GetAttributeInt(graphic, "rotation_value").ToString(CultureInfo.InvariantCulture);
             ColorValueEntry.Text = GetAttributeInt(graphic, "color_value").ToString(CultureInfo.InvariantCulture);
             IdentifyPopupOverlay.IsVisible = true;
+        }
+
+        private void OnIdentifyPopupPreferenceChanged(object? sender, CheckedChangedEventArgs e)
+        {
+            if (!e.Value)
+            {
+                currentlyIdentifiedGraphic = null;
+                IdentifyPopupOverlay.IsVisible = false;
+            }
         }
 
         private void OnIdentifyEditorCancelClicked(object sender, EventArgs e)
