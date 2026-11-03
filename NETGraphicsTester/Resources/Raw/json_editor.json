@@ -1,0 +1,17 @@
+{
+  "type": "esriTS",
+  "color": [255, 255, 255, 255],
+  "borderLineColor": [0, 255, 0, 255],
+  "borderLineSize": 2,
+  "font": { "family": "Arial", "size": 48 },
+  "horizontalAlignment": "center",
+  "kerning": true,
+  "rotated": false,
+  "text": "mno",
+  "verticalAlignment": "baseline",
+  "xoffset": 0,
+  "yoffset": 0,
+  "angle": 0,
+  "lineWidth": 192,
+  "lineHeight": 1
+}

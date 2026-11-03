@@ -142,16 +142,8 @@
                                                                    FontAttributes="Bold"
                                                                    FontSize="13"
                                                                    VerticalOptions="Center" />
-                            <Button x:Name="ToggleManualOperationsButton"
-                                                                        Grid.Column="1"
-                                                                        Text="Show controls"
-                                                                        FontSize="12"
-                                                                        Padding="10,4"
-                                                                        MinimumHeightRequest="32"
-                                                                        Clicked="OnToggleManualOperationsClicked" />
                         </Grid>
                         <ScrollView x:Name="ManualOperationsPanel"
-                                                                        IsVisible="False"
                                                                         Orientation="Vertical"
                                                                         HeightRequest="190"
                                                                         VerticalScrollBarVisibility="Always">
@@ -286,7 +278,11 @@
                                 <Label Text="color_value" FontSize="12" />
                                 <Entry x:Name="ColorValueEntry"
                                         ClearButtonVisibility="WhileEditing" />
-                           </VerticalStackLayout>
+
+                                <Label Text="class_breaks" FontSize="12" />
+                                <Entry x:Name="ClassBreaksEntry"
+                                        ClearButtonVisibility="WhileEditing" />
+                        </VerticalStackLayout>
                       </ScrollView>
 
                       <HorizontalStackLayout HorizontalOptions="End"

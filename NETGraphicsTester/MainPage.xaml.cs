@@ -284,14 +284,6 @@ namespace NETGraphicsTester
             await AddGraphicsOperation(updateUi: true, geomType: "polygon");
         }
 
-        private void OnToggleManualOperationsClicked(object sender, EventArgs e)
-        {
-            ManualOperationsPanel.IsVisible = !ManualOperationsPanel.IsVisible;
-            ToggleManualOperationsButton.Text = ManualOperationsPanel.IsVisible
-                ? "Hide controls"
-                : "Show controls";
-        }
-
         async private Task AddGraphicsOperation(bool updateUi, string geomType)
         {
             int count = GetRequestedCount();
@@ -348,6 +340,7 @@ namespace NETGraphicsTester
                         graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
                         graphic.Attributes["rotation_value"] = "50";
                         graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                        graphic.Attributes["class_breaks"] = random.Next(1, 11);
                         graphic.Attributes["NOTES"] = random.Next(0, 11);
                         stage = $"adding point {i + 1}/{count}";
                         if (i == 0 || i == count - 1)
@@ -405,6 +398,7 @@ namespace NETGraphicsTester
                         graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
                         graphic.Attributes["rotation_value"] = "50";
                         graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
+                        graphic.Attributes["class_breaks"] = random.Next(1, 11);
                         stage = $"adding point {i + 1}/{count}";
                         graphicsOverlay.Graphics.Add(graphic);
                     }
@@ -856,45 +850,90 @@ namespace NETGraphicsTester
                     }
                     break;
                 case 4:
-                    string symbolFilePath = "TextSymbols.stylx";
-                    SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
+                    UniqueValueRenderer textSymbolRenderer = new UniqueValueRenderer();
+                    textSymbolRenderer.FieldNames.Add("class_value");
 
-                    SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
-                    SymbolStyleSearchParameters searchParams1 = new SymbolStyleSearchParameters();
+                    TextSymbol textSymbol1 = new TextSymbol("abc", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
+                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("Text symbol 1", "1.png", textSymbol1, "1"));
 
-                    IList<SymbolStyleSearchResult> styleResults = await _pointSymbols.SearchSymbolsAsync(searchParams1);
+                    TextSymbol textSymbol2 = new TextSymbol("def", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
+                    textSymbol2.HaloColor = System.Drawing.Color.White;
+                    textSymbol2.HaloWidth = 3;
+                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("Text symbol 2", "2.png", textSymbol2, "2"));
 
-                    UniqueValueRenderer styleUniqueRenderer = new UniqueValueRenderer();
-                    styleUniqueRenderer.FieldNames.Add("class_value");
+                    TextSymbol textSymbol3 = new TextSymbol("ghi", System.Drawing.Color.White, 48, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
+                    textSymbol3.OutlineColor = System.Drawing.Color.Teal;
+                    textSymbol3.OutlineWidth = 1;
+                    //textSymbol3.FontWeight = Esri.ArcGISRuntime.Symbology.FontWeight.Bold;
+                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("Text symbol 3", "3.png", textSymbol3, "3"));
 
-                    int symbolIndex = 1;
+                    TextSymbol textSymbol4 = new TextSymbol("line1\nline2", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Right, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Bottom);
+                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("line1\nline2", "4.png", textSymbol4, "4"));
 
-                    foreach (SymbolStyleSearchResult result in styleResults)
-                    {
-                        // MultilayerPointSymbol multiLayerSym = await result.GetSymbolAsync() as MultilayerPointSymbol;
-                        Symbol multiLayerSym = await result.GetSymbolAsync();
+                    TextSymbol textSymbol5 = new TextSymbol("jkl", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
+                    textSymbol5.BackgroundColor = System.Drawing.Color.Orange;
+                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("5", "5.png", textSymbol5, "5"));
 
-                        styleUniqueRenderer.UniqueValues.Add(new UniqueValue(result.Name, result.Key, multiLayerSym, symbolIndex.ToString()));
+                    TextSymbol textSymbol6 = new TextSymbol("mno", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
+                    textSymbol6.FontFamily = "Arial";
+                    textSymbol6.FontDecoration = FontDecoration.Underline;
+                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("6", "6.png", textSymbol6, "6"));
 
-                        Debug.WriteLine($"Added symbol to renderer: {result.Name}, type: {multiLayerSym.GetType().Name ?? "Unknown"}");
+                    TextSymbol textSymbol7 = new TextSymbol("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
+                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("7", "7.png", textSymbol7, "7"));
 
-                        symbolIndex++;
-                    }
 
-                    graphicsOverlay.Renderer = styleUniqueRenderer;
+                    textSymbolRenderer.DefaultSymbol = textSymbol1;
+                    textSymbolRenderer.DefaultLabel = "Default Text";
+
+                    graphicsOverlay.Renderer = textSymbolRenderer;
+
+                    SymbolJsonEditor.Text = textSymbolRenderer.ToJson();
+
+                    //string symbolFilePath = "TextSymbols.stylx";
+                    //SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
+
+                    //SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
+                    //SymbolStyleSearchParameters searchParams1 = new SymbolStyleSearchParameters();
+
+                    //IList<SymbolStyleSearchResult> styleResults = await _pointSymbols.SearchSymbolsAsync(searchParams1);
+
+                    //UniqueValueRenderer styleUniqueRenderer = new UniqueValueRenderer();
+                    //styleUniqueRenderer.FieldNames.Add("class_value");
+
+                    //int symbolIndex = 1;
+
+                    //foreach (SymbolStyleSearchResult result in styleResults)
+                    //{
+                    //    // MultilayerPointSymbol multiLayerSym = await result.GetSymbolAsync() as MultilayerPointSymbol;
+                    //    Symbol multiLayerSym = await result.GetSymbolAsync();
+
+                    //    styleUniqueRenderer.UniqueValues.Add(new UniqueValue(result.Name, result.Key, multiLayerSym, symbolIndex.ToString()));
+
+                    //    Debug.WriteLine($"Added symbol to renderer: {result.Name}, type: {multiLayerSym.GetType().Name ?? "Unknown"}");
+
+                    //    symbolIndex++;
+                    //}
+
+                    //graphicsOverlay.Renderer = styleUniqueRenderer;
                     break;
                 case 5:
                     ClassBreaksRenderer classBreaksRenderer = new ClassBreaksRenderer();
 
-                    classBreaksRenderer.FieldName = "class_value";
-                    Symbol lowSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Green, 10);
-                    Symbol mediumSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Yellow, 15);
-                    Symbol highSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 20);
-                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Low", "0-1", 0, 1, lowSymbol));
-                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Medium", "2-3", 2, 3, mediumSymbol));
-                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("High", "4-9", 4, 9, highSymbol));
+                    classBreaksRenderer.FieldName = "class_breaks";
+                    Symbol lowSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Green, 25);
+                    Symbol mediumSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Yellow, 30);
+                    Symbol highSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 35);
+                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Low", "0-2", 0, 2, lowSymbol));
+                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Medium", "3-5", 3, 5, mediumSymbol));
+                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("High", "6-9", 6, 9, highSymbol));
+
+                    // Testing background
+                    SimpleFillSymbol backgroundFill = new SimpleFillSymbol(SimpleFillSymbolStyle.Vertical, System.Drawing.Color.Pink, null);
+                    classBreaksRenderer.BackgroundFillSymbol = backgroundFill;
 
                     graphicsOverlay.Renderer = classBreaksRenderer;
+                    SymbolJsonEditor.Text = classBreaksRenderer.ToJson();
                     operationTimer.Stop();
 
                     if (updateUi)
@@ -1743,6 +1782,7 @@ namespace NETGraphicsTester
             TransparencyValueEntry.Text = GetAttributeInt(graphic, "transparency_value").ToString(CultureInfo.InvariantCulture);
             RotationValueEntry.Text = GetAttributeInt(graphic, "rotation_value").ToString(CultureInfo.InvariantCulture);
             ColorValueEntry.Text = GetAttributeInt(graphic, "color_value").ToString(CultureInfo.InvariantCulture);
+            ClassBreaksEntry.Text = GetAttributeInt(graphic, "class_breaks").ToString(CultureInfo.InvariantCulture);
             IdentifyPopupOverlay.IsVisible = true;
         }
 
@@ -1774,6 +1814,7 @@ namespace NETGraphicsTester
             currentlyIdentifiedGraphic.Attributes["transparency_value"] = ParseAttributeInt(TransparencyValueEntry.Text);
             currentlyIdentifiedGraphic.Attributes["rotation_value"] = ParseAttributeInt(RotationValueEntry.Text);
             currentlyIdentifiedGraphic.Attributes["color_value"] = ParseAttributeInt(ColorValueEntry.Text);
+            currentlyIdentifiedGraphic.Attributes["class_breaks"] = ParseAttributeInt(ClassBreaksEntry.Text);
 
             StatusLabel.Text = "Updated identified graphic attributes.";
             IdentifyPopupOverlay.IsVisible = false;
