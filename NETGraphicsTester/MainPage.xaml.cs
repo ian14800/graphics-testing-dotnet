@@ -322,7 +322,7 @@ namespace NETGraphicsTester
                 int originalCount = graphicsOverlay.Graphics.Count;
                 try
                 {
-                    SimpleRenderer pointRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 10));
+                    SimpleRenderer pointRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 100));
                     graphicsOverlay.Renderer = pointRenderer;
                     SymbolJsonEditor.Text = pointRenderer.ToJson();
                     for (int i = 0; i < count; i++)
@@ -341,6 +341,8 @@ namespace NETGraphicsTester
                         graphic.Attributes["rotation_value"] = "50";
                         graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
                         graphic.Attributes["class_breaks"] = random.Next(1, 11);
+                        //graphic.Attributes["class_breaks"] = -100.0 + (random.NextDouble() * 200.0);
+                        //graphic.Attributes["class_breaks"] = random.Next(int.MaxValue - 5, int.MaxValue);
                         graphic.Attributes["NOTES"] = random.Next(0, 11);
                         stage = $"adding point {i + 1}/{count}";
                         if (i == 0 || i == count - 1)
@@ -854,6 +856,7 @@ namespace NETGraphicsTester
                     textSymbolRenderer.FieldNames.Add("class_value");
 
                     TextSymbol textSymbol1 = new TextSymbol("abc", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
+                    textSymbol1.FontDecoration = FontDecoration.LineThrough;
                     textSymbolRenderer.UniqueValues.Add(new UniqueValue("Text symbol 1", "1.png", textSymbol1, "1"));
 
                     TextSymbol textSymbol2 = new TextSymbol("def", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
@@ -921,9 +924,12 @@ namespace NETGraphicsTester
                     ClassBreaksRenderer classBreaksRenderer = new ClassBreaksRenderer();
 
                     classBreaksRenderer.FieldName = "class_breaks";
-                    Symbol lowSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Green, 25);
-                    Symbol mediumSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Yellow, 30);
+                    Symbol lowSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Green, null);
+                    Symbol mediumSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Cross, System.Drawing.Color.Yellow, new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Black, 4));
+                    //Symbol lowSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Green, 25);
+                    //Symbol mediumSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Yellow, 30);
                     Symbol highSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 35);
+                    Symbol defaultSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Triangle, System.Drawing.Color.Orange, 15);
                     classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Low", "0-2", 0, 2, lowSymbol));
                     classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Medium", "3-5", 3, 5, mediumSymbol));
                     classBreaksRenderer.ClassBreaks.Add(new ClassBreak("High", "6-9", 6, 9, highSymbol));
@@ -931,6 +937,8 @@ namespace NETGraphicsTester
                     // Testing background
                     SimpleFillSymbol backgroundFill = new SimpleFillSymbol(SimpleFillSymbolStyle.Vertical, System.Drawing.Color.Pink, null);
                     classBreaksRenderer.BackgroundFillSymbol = backgroundFill;
+
+                    classBreaksRenderer.DefaultSymbol = defaultSymbol;
 
                     graphicsOverlay.Renderer = classBreaksRenderer;
                     SymbolJsonEditor.Text = classBreaksRenderer.ToJson();
@@ -1774,6 +1782,17 @@ namespace NETGraphicsTester
             return defaultValue;
         }
 
+        private static double ParseAttributeDouble(string? value, int defaultValue = 0)
+        {
+            if (double.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out double parsed))
+            {
+                Debug.WriteLine($"Parsed value {parsed} for class breaks renderer");
+                return parsed;
+            }
+
+            return defaultValue;
+        }
+
         private void ShowIdentifyEditorForGraphic(Graphic graphic)
         {
             currentlyIdentifiedGraphic = graphic;
@@ -1814,7 +1833,7 @@ namespace NETGraphicsTester
             currentlyIdentifiedGraphic.Attributes["transparency_value"] = ParseAttributeInt(TransparencyValueEntry.Text);
             currentlyIdentifiedGraphic.Attributes["rotation_value"] = ParseAttributeInt(RotationValueEntry.Text);
             currentlyIdentifiedGraphic.Attributes["color_value"] = ParseAttributeInt(ColorValueEntry.Text);
-            currentlyIdentifiedGraphic.Attributes["class_breaks"] = ParseAttributeInt(ClassBreaksEntry.Text);
+            currentlyIdentifiedGraphic.Attributes["class_breaks"] = ParseAttributeDouble(ClassBreaksEntry.Text);
 
             StatusLabel.Text = "Updated identified graphic attributes.";
             IdentifyPopupOverlay.IsVisible = false;

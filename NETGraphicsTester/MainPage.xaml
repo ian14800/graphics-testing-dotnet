@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:esriUI="clr-namespace:Esri.ArcGISRuntime.Maui;assembly=Esri.ArcGISRuntime.Maui"
              x:Class="NETGraphicsTester.MainPage"
-                                                 BackgroundColor="{AppThemeBinding Light=#F7F7F7, Dark=#0F0F0F}">
+             BackgroundColor="{AppThemeBinding Light=#F7F7F7, Dark=#0F0F0F}">
 
                 <Grid RowDefinitions="*,*,Auto"
           RowSpacing="12"
