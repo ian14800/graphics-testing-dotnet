@@ -5,296 +5,59 @@
              x:Class="NETGraphicsTester.MainPage"
              BackgroundColor="{AppThemeBinding Light=#F7F7F7, Dark=#0F0F0F}">
 
-                <Grid RowDefinitions="*,*,Auto"
+    <Grid RowDefinitions="*,*"
           RowSpacing="12"
           Padding="12">
         <Border Grid.Row="0"
                 StrokeThickness="1"
-                                                                Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
-                                                                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#101010}"
+                Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
+                BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#101010}"
                 MinimumHeightRequest="320">
-                        <Grid>
-                                <Picker x:Name="ScenePicker"
-                                                Title="Select a scene"
-                                                HorizontalOptions="End"
-                                                VerticalOptions="Start"
-                                                Margin="12"
-                                                ZIndex="2"
-                                                SelectedIndexChanged="OnScenePickerSelectionChanged">
-                                        <Picker.ItemsSource> 
-                                                <x:Array Type="{x:Type x:String}">
-                                                <x:String>Blank</x:String>
-                                                <x:String>Light</x:String>
-                                                <x:String>Medium</x:String>
-                                                <x:String>Heavy</x:String>
-                                                </x:Array>
-                                        </Picker.ItemsSource>
-                                </Picker>
-                                <esriUI:LocalSceneView x:Name="sceneView" Scene="{Binding Scene}" />
-                                <Border HorizontalOptions="End"
-                                                VerticalOptions="End"
-                                                Margin="10"
-                                                Padding="10,4"
-                                                StrokeThickness="0"
-                                                BackgroundColor="#AA000000">
-                                        <Label x:Name="GraphicsCountLabel"
-                                                   Text="Graphics: 0"
-                                                   TextColor="White"
-                                                   FontSize="12" />
-                                </Border>
-                        </Grid>
+            <Grid>
+                <esriUI:LocalSceneView x:Name="sceneView" Scene="{Binding Scene}" />
+                <Border HorizontalOptions="End"
+                        VerticalOptions="End"
+                        Margin="10"
+                        Padding="10,4"
+                        StrokeThickness="0"
+                        BackgroundColor="#AA000000">
+                    <Label x:Name="GraphicsCountLabel"
+                           Text="Graphics: 0"
+                           TextColor="White"
+                           FontSize="12" />
+                </Border>
+            </Grid>
         </Border>
 
         <ScrollView Grid.Row="1"
-                    Orientation="Horizontal"
-                    HorizontalScrollBarVisibility="Always">
-            <HorizontalStackLayout Spacing="10"
-                                   Padding="0,0,0,2">
-                <Border StrokeThickness="1"
-                        Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
-                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#161616}"
-                        Padding="10"
-                        WidthRequest="240">
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="Input"
-                               FontAttributes="Bold"
-                               FontSize="13" />
-                        <HorizontalStackLayout Spacing="8"
-                                               VerticalOptions="Center">
-                            <Label Text="Count"
-                                   VerticalOptions="Center" />
-                            <Entry x:Name="CountEntry"
-                                   Text="10"
-                                   Keyboard="Numeric"
-                                   HorizontalOptions="Fill"
-                                   ClearButtonVisibility="WhileEditing" />
-                        </HorizontalStackLayout>
-                        <HorizontalStackLayout Spacing="8"
-                                               VerticalOptions="Center">
-                            <Label Text="Runs"
-                                   VerticalOptions="Center" />
-                            <Entry x:Name="RunsCount"
-                                   Text="100"
-                                   Keyboard="Numeric"
-                                   HorizontalOptions="Fill"
-                                   ClearButtonVisibility="WhileEditing" />
-                        </HorizontalStackLayout>
-                           <HorizontalStackLayout Spacing="8"
-                                                     VerticalOptions="Center">
-                                <CheckBox x:Name="ShowIdentifyPopupCheckBox"
-                                           IsChecked="False"
-                                           CheckedChanged="OnIdentifyPopupPreferenceChanged" />
-                                <Label Text="Show identify popup"
-                                        VerticalOptions="Center" />
-                           </HorizontalStackLayout>
-
-                        <Label Text="Renderer" FontAttributes="Bold" />
-
-                        <Picker x:Name="RendererPicker"
-                                Title="Select renderer"
-                                SelectedIndex="0"
-                                SelectedIndexChanged="OnRendererSelectionChanged">
-                        <Picker.ItemsSource>
-                                <x:Array Type="{x:Type x:String}">
-                                <x:String>Red circle</x:String>
-                                <x:String>Blue square</x:String>
-                                <x:String>3D models</x:String>
-                                <x:String>Pictures</x:String>
-                                <x:String>Styles</x:String>
-                                <x:String>Class breaks</x:String>
-                                <x:String>JSON renderer...</x:String>
-                                </x:Array>
-                        </Picker.ItemsSource>
-                        </Picker>
-
-
-                        <VerticalStackLayout x:Name="JsonRendererPanel"
-                                        IsVisible="False"
-                                        Spacing="8">
-                        <Button Text="Apply JSON renderer"
-                                Clicked="OnApplyJsonRendererClicked" />
-                        <Editor x:Name="RendererJsonEditor"
-                                Placeholder="Paste ArcGIS renderer JSON"
-                                AutoSize="TextChanges"
-                                MaximumHeightRequest="200" />
-
-
-                        <Slider x:Name="TerrainSlider"
-                            Margin="0,0,5,0"
-                            Maximum="6"
-                            MaximumTrackColor="CadetBlue"
-                            Minimum="1"
-                            MinimumTrackColor="CadetBlue"
-                            Value="1" />
-                        
-                        </VerticalStackLayout>
-                    </VerticalStackLayout>                    
-                </Border>
-
-                <Border StrokeThickness="1"
-                        Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
-                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#161616}"
-                        Padding="10"
-                                                WidthRequest="300">
-                    <VerticalStackLayout Spacing="8">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="Manual Operations"
-                                                                   FontAttributes="Bold"
-                                                                   FontSize="13"
-                                                                   VerticalOptions="Center" />
-                        </Grid>
-                        <ScrollView x:Name="ManualOperationsPanel"
-                                                                        Orientation="Vertical"
-                                                                        HeightRequest="190"
-                                                                        VerticalScrollBarVisibility="Always">
-                            <VerticalStackLayout Spacing="8">
-                                <Button Text="Add points"
-                                        Clicked="OnAddPointGraphicsClicked" />
-                                <Button Text="Add multipoints"
-                                        Clicked="OnAddMultipointGraphicsClicked" />
-                                <Button Text="Add lines"
-                                        Clicked="OnAddLineGraphicsClicked" />
-                                <Button Text="Add polygons"
-                                        Clicked="OnAddPolygonGraphicsClicked" />
-                                <Button Text="Remove"
-                                        Clicked="OnRemoveGraphicsClicked" />
-                                <Button Text="Move (Uniform)"
-                                        Clicked="OnMoveGraphicsUniformClicked" />
-                                <Button Text="Move (Random)"
-                                        Clicked="OnMoveGraphicsRandomClicked" />
-                                <Button Text="Swap placement"
-                                        Clicked="OnSwapPlacementClicked" />
-                                <Button Text="Add altitude"
-                                        Clicked="OnAddAltitudeOffsetClicked" />
-                                <Button Text="Toggle Graphics Visibility"
-                                        Clicked="OnToggleGraphicsVisibilityClicked"/>
-                                <Button Text="Toggle Graphics Selected"
-                                        Clicked="OnToggleGraphicsSelectedClicked"/>
-                                <!-- <Button Text="Swap Renderer"
-                                        Clicked="OnSwapRendererClicked" /> -->
-                                <Button Text="Add Symbol Overrides"
-                                        Clicked="OnAddSymbolsClicked" />
-                                <Button Text="Remove Overlay"
-                                        Clicked="OnRemoveOverlayClicked" />
-                                <Button Text="Add Overlay"
-                                        Clicked="OnAddOverlayClicked" />
-                                <Button Text="Toggle Visibility"
-                                        Clicked="OnToggleVisibiltyClicked"/>
-                                <Button Text="Toggle Opacity"
-                                        Clicked="OnToggleOpacityClicked"/>
-                            </VerticalStackLayout>
-                        </ScrollView>
-                    </VerticalStackLayout>
-                </Border>
-
-                <Border StrokeThickness="1"
-                        Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
-                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#161616}"
-                        Padding="10"
-                        WidthRequest="320">
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="Animated Workflow Runner"
-                               FontAttributes="Bold"
-                               FontSize="13" />
-                        <Picker x:Name="WorkflowPicker"
-                                Title="Select a workflow">
-                            <Picker.ItemsSource>
-                                <x:Array Type="{x:Type x:String}">
-                                    <x:String>Move graphics (uniform)</x:String>
-                                    <x:String>Move graphics (random)</x:String>
-                                    <x:String>Add lines</x:String>
-                                    <x:String>Add polygons</x:String>
-                                    <x:String>Add/remove overlay</x:String>
-                                    <x:String>Add/move/remove</x:String>
-                                    <x:String>Add/give symbols/remove</x:String>
-                                    <x:String>Add/give symbols/remove overlay</x:String>
-                                </x:Array>
-                            </Picker.ItemsSource>
-                        </Picker>
-                        <Button Text="Run animated workflow"
-                                Clicked="OnRunAnimationsClicked" />
-                        <VerticalStackLayout x:Name="JsonSymbolPanel"
-                                             Spacing="8">
-                            <Editor x:Name="SymbolJsonEditor"
-                                    Placeholder="Paste ArcGIS symbol JSON"
-                                    HeightRequest="80"
-                                    AutoSize="Disabled" />
-
-                            <Button Text="Apply JSON symbol"
-                                    Clicked="OnApplyJsonSymbolClicked" />
-                        </VerticalStackLayout>
-                    </VerticalStackLayout>
-                </Border>
-            </HorizontalStackLayout>
+                    Orientation="Vertical">
+            <VerticalStackLayout Spacing="8">
+                <Button x:Name="Workflow1Button" Text="JS 1: Model LOD Preview" Clicked="ExecuteWorkflow_ModelLODs" />
+                <Button x:Name="Workflow2Button" Text="JS 2: Search Results" Clicked="ExecuteWorkflow_SearchResults" />
+                <Button x:Name="Workflow3Button" Text="JS 3: GPS Accuracy" Clicked="ExecuteWorkflow_GPSAccuracy" />
+                <Button x:Name="Workflow4Button" Text="JS 4: Data Extraction" Clicked="ExecuteWorkflow_DataExtraction" />
+                <Button x:Name="Workflow5Button" Text="JS 5: Editing / Export" Clicked="ExecuteWorkflow_EditingExport" />
+                <Button x:Name="Workflow6Button" Text="JS 6: Selection Highlight" Clicked="ExecuteWorkflow_SelectionHighlight" />
+                <Button x:Name="Workflow7Button" Text=".NET 1: Missile Trajectory" Clicked="ExecuteWorkflow_MissileTrajectory" />
+                <Button x:Name="Workflow8Button" Text=".NET 2: Web Renderer" Clicked="ExecuteWorkflow_WebRenderer" />
+                <Button x:Name="Workflow9Button" Text=".NET 3: Create Track" Clicked="ExecuteWorkflow_CreateTrack" />
+                <Button x:Name="Workflow10Button" Text=".NET 4: Flashing Updates" Clicked="ExecuteWorkflow_FlashingUpdates" />
+                <Button x:Name="Workflow11Button" Text="Flutter 1: Picture Popups" Clicked="ExecuteWorkflow_PicturePopups" />
+                <Button x:Name="Workflow12Button" Text="Flutter 2: Geocode Points" Clicked="ExecuteWorkflow_GeocodePoints" />
+                <Button x:Name="Workflow13Button" Text="Flutter 3: Transfer Overlay" Clicked="ExecuteWorkflow_TransferOverlay" />
+                <Button x:Name="Workflow14Button" Text="Flutter 4: Query by Extent" Clicked="ExecuteWorkflow_QueryByExtent" />
+                <Button x:Name="Workflow15Button" Text="Flutter 5: Filter Graphics" Clicked="ExecuteWorkflow_FilterGraphics" />
+                <Button x:Name="Workflow16Button" Text="Flutter 6: POI by Route" Clicked="ExecuteWorkflow_POIByRoute" />
+                <Button x:Name="Workflow17Button" Text="Qt 1: Multifaceted Renderer" Clicked="ExecuteWorkflow_MultifacetedRenderer" />
+                <Button x:Name="Workflow18Button" Text="Qt 2: GeoJSON Graphics" Clicked="ExecuteWorkflow_GeoJSONGraphics" />
+                <Button x:Name="Workflow19Button" Text="Qt 3: Traverse Route" Clicked="ExecuteWorkflow_TraverseRoute" />
+                <Button x:Name="Workflow20Button" Text="Qt 4: Complex Popup" Clicked="ExecuteWorkflow_ComplexPopup" />
+                <Button x:Name="Workflow21Button" Text="Qt 5: Text Labels" Clicked="ExecuteWorkflow_TextLabels" />
+                <Button x:Name="Workflow22Button" Text="Qt 6: Follow Graphic" Clicked="ExecuteWorkflow_FollowGraphic" />
+                <Button x:Name="Workflow23Button" Text="Swift 1: Nearby Points" Clicked="ExecuteWorkflow_ShowNearbyPoints" />
+                <Button x:Name="Workflow24Button" Text="Swift 2: Drone Track" Clicked="ExecuteWorkflow_DroneTrack" />
+            </VerticalStackLayout>
         </ScrollView>
-
-        <VerticalStackLayout Grid.Row="2"
-                             Spacing="2">
-            <Label x:Name="StatusLabel"
-                   Text="Initializing scene..."
-                   LineBreakMode="WordWrap" />
-            <Label x:Name="EventTimer"
-                   Text=" // event time"
-                   LineBreakMode="WordWrap" />
-            <Label x:Name="DrawTimer"
-                   Text=" // draw time"
-                   LineBreakMode="WordWrap" />
-        </VerticalStackLayout>
-
-         <Grid x:Name="IdentifyPopupOverlay"
-                Grid.RowSpan="3"
-                IsVisible="False"
-                BackgroundColor="#AA000000"
-                Padding="20">
-             <Border HorizontalOptions="Center"
-                      VerticalOptions="Center"
-                      MaximumWidthRequest="420"
-                      Stroke="{AppThemeBinding Light=#D7D7D7, Dark=#3A3A3A}"
-                      BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1A1A1A}"
-                      Padding="14">
-                  <VerticalStackLayout Spacing="10">
-                      <Label Text="Edit Graphic Attributes"
-                              FontAttributes="Bold"
-                              FontSize="16" />
-
-                      <ScrollView MaximumHeightRequest="320">
-                           <VerticalStackLayout Spacing="8">
-                                <Label Text="class_value" FontSize="12" />
-                                <Entry x:Name="ClassValueEntry"
-                                        ClearButtonVisibility="WhileEditing" />
-
-                                <Label Text="size_value" FontSize="12" />
-                                <Entry x:Name="SizeValueEntry"
-                                        ClearButtonVisibility="WhileEditing" />
-
-                                <Label Text="transparency_value" FontSize="12" />
-                                <Entry x:Name="TransparencyValueEntry"
-                                        ClearButtonVisibility="WhileEditing" />
-
-                                <Label Text="rotation_value" FontSize="12" />
-                                <Entry x:Name="RotationValueEntry"
-                                        ClearButtonVisibility="WhileEditing" />
-
-                                <Label Text="color_value" FontSize="12" />
-                                <Entry x:Name="ColorValueEntry"
-                                        ClearButtonVisibility="WhileEditing" />
-
-                                <Label Text="class_breaks" FontSize="12" />
-                                <Entry x:Name="ClassBreaksEntry"
-                                        ClearButtonVisibility="WhileEditing" />
-                        </VerticalStackLayout>
-                      </ScrollView>
-
-                      <HorizontalStackLayout HorizontalOptions="End"
-                                                 Spacing="10">
-                           <Button Text="Cancel"
-                                    Clicked="OnIdentifyEditorCancelClicked" />
-                           <Button Text="OK"
-                                    Clicked="OnIdentifyEditorOkClicked" />
-                      </HorizontalStackLayout>
-                  </VerticalStackLayout>
-             </Border>
-         </Grid>
     </Grid>
 
 </ContentPage>

@@ -12,77 +12,28 @@ namespace NETGraphicsTester
 {
     public partial class MainPage : ContentPage
     {
+        Random random = new Random();
+        Graphic? currentlyIdentifiedGraphic;
+
+        string passiveMode = "normal";
+        int graphicsCount = 0;
+
+        private bool _sceneReady;
+
         GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
-        SimpleRenderer redCircle = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 12));
-        Stopwatch drawClock = new Stopwatch();
-        int[] symbolTypeCounts = new int[3] { 0, 0, 0 };
+        SimpleRenderer defaultRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Yellow, 15));
 
         public MainPage()
         {
             InitializeComponent();
-            UpdateGraphicsCountLabel();
             _ = InitializeSceneAsync();
-        }
-
-        Random random = new Random();
-        int surfacePlacement = 0;
-        double currentOpacity = 1.0;
-        bool overlayVisibilty = true;
-        bool isBatchRun = false;
-        Graphic? currentlyIdentifiedGraphic;
-
-        private const int ModelClassMin = 1;
-        private const int ModelClassMax = 7;
-        private string currentScene = "Blank";
-        private bool initialSetup = true;
-
-        private string GetCurrentScene()
-        {
-            Picker? scenePicker = this.FindByName<Picker>("ScenePicker");
-            if (scenePicker == null || scenePicker.SelectedItem == null)
-            {
-                return "Blank";
-            }
-
-            return scenePicker.SelectedItem.ToString() ?? "Blank";
-        }
-
-        private int GetRequestedCount()
-        {
-            Entry? countEntry = this.FindByName<Entry>("CountEntry");
-            if (!int.TryParse(countEntry?.Text, out int count) || count <= 0)
-            {
-                StatusLabel.Text = "Enter a positive whole number in Count.";
-                return 0;
-            }
-
-            return count;
-        }
-
-        private int GetRunsCount()
-        {
-            Entry? countEntry = this.FindByName<Entry>("RunsCount");
-            if (!int.TryParse(countEntry?.Text, out int count) || count <= 0)
-            {
-                StatusLabel.Text = "Enter a positive whole number in Count.";
-                return 0;
-            }
-
-            return count;
         }
 
         private void SceneView_DrawStatusChanged(object? sender, EventArgs e)
         {
-            if (isBatchRun || sceneView == null)
-            {
-                return;
-            }
-
             if (sceneView.DrawStatus == DrawStatus.Completed)
             {
-                drawClock.Stop();
-                DrawTimer.Text = $"{drawClock.ElapsedMilliseconds} ms // draw timer";
-                UpdateGraphicsCountLabel();
+                Debug.WriteLine("Draw completed.");
             }
         }
 
@@ -104,1071 +55,74 @@ namespace NETGraphicsTester
 
         private async Task InitializeSceneAsync()
         {
-            currentScene = GetCurrentScene();
-
-            if (currentScene == "Blank")
-            {
-                try
-                {
-                    var localSceneView = sceneView;
-                    if (localSceneView == null)
-                    {
-                        StatusLabel.Text = "Scene view is not ready.";
-                        return;
-                    }
-
-                    //localSceneView.WarningsChanged += SceneView_WarningsChanged;
-
-                    //var scene = new Scene(SceneViewingMode.Local, SpatialReferences.Wgs84);
-                    var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISChartedTerritory);
-                    var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
-
-
-                    string _elevationServiceUrl = "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
-                    Surface elevationSurface = new Surface();
-                    ArcGISTiledElevationSource elevationSource = new ArcGISTiledElevationSource(new Uri(_elevationServiceUrl));
-                    elevationSurface.ElevationSources.Add(elevationSource);
-                    scene.BaseSurface = elevationSurface;
-
-
-                    TerrainSlider.ValueChanged += (sender, e) =>
-                    {
-                        scene.BaseSurface.ElevationExaggeration = TerrainSlider.Value;
-                    };
-
-                    await scene.LoadAsync();
-
-                    // var extent = new Envelope(
-                    //     -122.53, 37.70, -122.35, 37.82,
-                    //     SpatialReferences.Wgs84);
-
-                    // scene.ClippingArea = extent;
-                    // scene.IsClippingEnabled = true;
-
-                    scene.BaseSurface.NavigationConstraint = NavigationConstraint.None;
-
-                    localSceneView.Scene = scene;
-
-                    if (initialSetup)
-                    {
-                        graphicsOverlay.Renderer = redCircle;
-                        graphicsOverlay.SceneProperties.SurfacePlacement = SurfacePlacement.Absolute;
-                        graphicsOverlay.SceneProperties.AltitudeOffset = 0;
-                        var overlays = localSceneView.GraphicsOverlays;
-                        if (overlays == null)
-                        {
-                            StatusLabel.Text = "Graphics overlay collection is unavailable.";
-                            return;
-                        }
-
-                        overlays.Add(graphicsOverlay);
-                        initialSetup = false;
-                    }
-
-                    string PointSceneLayerUri = "https://services5.arcgis.com/N82JbI5EYtAkuUKU/arcgis/rest/services/FutureCityPoints_partialNull/SceneServer/0";
-                    ArcGISSceneLayer pointSceneLayer = new ArcGISSceneLayer(new Uri(PointSceneLayerUri));
-
-                    await pointSceneLayer.LoadAsync();
-                    if (pointSceneLayer.LoadStatus != Esri.ArcGISRuntime.LoadStatus.Loaded)
-                    {
-                        Debug.WriteLine($"Point scene layer did not load: {pointSceneLayer.LoadStatus}");
-                        return;
-                    }
-
-                    localSceneView.Scene.OperationalLayers.Add(pointSceneLayer);
-                    Debug.WriteLine("Point scene layer added to operational layers.");
-
-                    if (pointSceneLayer.Renderer?.SceneProperties is RendererSceneProperties sceneProperties)
-                    {
-                        sceneProperties.PitchExpression = "45";
-                        Debug.WriteLine("Roll expression set to 45 for point scene layer.");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Point scene layer has no renderer scene properties; roll expression was not set.");
-                    }
-
-                    localSceneView.SetViewpointCamera(camera);
-                    localSceneView.DrawStatusChanged += SceneView_DrawStatusChanged;
-                    localSceneView.GeoViewTapped += OnSceneViewTapped;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error thrown: {ex.Message}");
-                }
-            } else
-            {
-                string sceneId = "";
-                switch(currentScene)
-                {
-                    case "Heavy":
-                        sceneId = "7111c1efcaf54e5d8e57946d2a8d8933";
-                        break;
-                    case "Medium":
-                        sceneId = "e2b55641585d483b8bcef895acf0f934";
-                        break;
-                    case "Light":
-                        sceneId = "b74672615e1842f697d31438ff467d23";
-                        break;
-                    default:
-                        sceneId = "3023142800a64ea1b6ec3459c05c9ac0";
-                        break;
-                }
-
-                try
-                {
-                    ArcGISPortal portal = await ArcGISPortal.CreateAsync();
-
-                    PortalItem sceneItem = await PortalItem.CreateAsync(portal, sceneId);
-
-                    Scene scene = new Scene(sceneItem);
-
-                    TerrainSlider.ValueChanged += (sender, e) =>
-                    {
-                        scene.BaseSurface.ElevationExaggeration = TerrainSlider.Value;
-                    };
-
-                    sceneView.Scene = scene;
-                } catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error loading scene: {ex.Message}");
-                }
-            }  
-        }
-
-        private void OnScenePickerSelectionChanged(object sender, EventArgs e)
-        {
-            string selectedScene = GetCurrentScene();
-            if (selectedScene != currentScene)
-            {
-                currentScene = selectedScene;
-                _ = InitializeSceneAsync();
-            }
-        }
-
-        private void UpdateGraphicsCountLabel()
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                Label? graphicsCountLabel = this.FindByName<Label>("GraphicsCountLabel");
-                if (graphicsCountLabel != null)
-                {
-                    graphicsCountLabel.Text = $"Graphics: {graphicsOverlay.Graphics.Count}";
-                }
-            });
-        }
-
-        private async void OnAddPointGraphicsClicked(object sender, EventArgs e)
-        {
-            await AddGraphicsOperation(updateUi: true, geomType: "point");
-        }
-
-        private async void OnAddMultipointGraphicsClicked(object sender, EventArgs e)
-        {
-            await AddGraphicsOperation(updateUi: true, geomType: "multipoint");
-        }
-
-        private static void LogGraphicsDiagnostic(string message)
-        {
-            string entry = $"{DateTimeOffset.Now:O} [thread {Environment.CurrentManagedThreadId}] {message}";
-            Debug.WriteLine(entry);
-        }
-
-        private async void OnAddLineGraphicsClicked(object sender, EventArgs e)
-        {
-            await AddGraphicsOperation(updateUi: true, geomType: "line");
-        }
-
-        private async void OnAddPolygonGraphicsClicked(object sender, EventArgs e)
-        {
-            await AddGraphicsOperation(updateUi: true, geomType: "polygon");
-        }
-
-        async private Task AddGraphicsOperation(bool updateUi, string geomType)
-        {
-            int count = GetRequestedCount();
-            if (count <= 0)
-            {
-                return;
-            }
-
-            Envelope? extent = sceneView.GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry as Envelope;
-            if (extent == null)
-            {
-                System.Diagnostics.Debug.WriteLine("Could not determine current viewpoint extent.");
-                StatusLabel.Text = "Could not determine current viewpoint extent.";
-                return;
-            }
-
-            MapPoint? center = sceneView.GetCurrentViewpoint(ViewpointType.CenterAndScale)?.TargetGeometry as MapPoint;
-            double baseZ = center?.Z ?? 0;
-            const double zRange = 500;
-
-            if (updateUi)
-            {
-                EventTimer.Text = " // event time";
-                DrawTimer.Text = " // draw time";
-            }
-            Stopwatch operationTimer = Stopwatch.StartNew();
-            if (updateUi)
-            {
-                drawClock.Reset();
-                drawClock.Start();
-            }
-
-            if (geomType == "point")
-            {
-                string stage = "starting point graphics";
-                int originalCount = graphicsOverlay.Graphics.Count;
-                try
-                {
-                    SimpleRenderer pointRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 100));
-                    graphicsOverlay.Renderer = pointRenderer;
-                    SymbolJsonEditor.Text = pointRenderer.ToJson();
-                    for (int i = 0; i < count; i++)
-                    {
-                        stage = $"constructing point {i + 1}/{count}";
-                        double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                        double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                        double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                        MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
-
-                        Graphic graphic = new Graphic(point);
-                        int symbolCount = 11;
-                        graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
-                        graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                        graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                        graphic.Attributes["rotation_value"] = "50";
-                        graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                        graphic.Attributes["class_breaks"] = random.Next(1, 11);
-                        //graphic.Attributes["class_breaks"] = -100.0 + (random.NextDouble() * 200.0);
-                        //graphic.Attributes["class_breaks"] = random.Next(int.MaxValue - 5, int.MaxValue);
-                        graphic.Attributes["NOTES"] = random.Next(0, 11);
-                        stage = $"adding point {i + 1}/{count}";
-                        if (i == 0 || i == count - 1)
-                        {
-                            LogGraphicsDiagnostic($"Before {stage}: ({x}, {y}, {z})");
-                        }
-                        graphicsOverlay.Graphics.Add(graphic);
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    drawClock.Stop();
-                    if (updateUi)
-                    {
-                        StatusLabel.Text = $"Point operation failed at {stage}: {ex.Message}";
-                    }
-                }
-                finally
-                {
-                    operationTimer.Stop();
-                    if (updateUi)
-                    {
-                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                    }
-                }
-            }
-            if (geomType == "multipoint")
-            {
-                string stage = "starting point graphics";
-                int originalCount = graphicsOverlay.Graphics.Count;
-                try
-                {
-                    SimpleRenderer pointRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 10));
-                    graphicsOverlay.Renderer = pointRenderer;
-                    SymbolJsonEditor.Text = pointRenderer.ToJson();
-                    for (int i = 0; i < count; i++)
-                    {
-                        MapPoint[] points = new MapPoint[5];
-                        double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                        double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                        for (int j = 0; j < 5; j++)
-                        {
-                            stage = $"constructing multipoint {i + 1}/{count}";
-                            double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                            MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
-
-                            points[j] = point;
-                        }
-                        Multipoint multipoint = new Multipoint(points);
-                        Graphic graphic = new Graphic(multipoint);
-                        int symbolCount = 57;
-                        graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
-                        graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                        graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                        graphic.Attributes["rotation_value"] = "50";
-                        graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                        graphic.Attributes["class_breaks"] = random.Next(1, 11);
-                        stage = $"adding point {i + 1}/{count}";
-                        graphicsOverlay.Graphics.Add(graphic);
-                    }
-                    //{
-                    //    MapPoint[] points = new MapPoint[5];
-                    //    for (int j = 0; j < 5; j++)
-                    //    {
-                    //        stage = $"constructing multipoint {i + 1}/{count}";
-                    //        double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                    //        double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                    //        //double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                    //        double z = baseZ;
-
-                    //        SpatialReference spatialReference;
-                    //        int spatialReferenceIndex = random.Next(0, 5);
-
-                    //        switch (spatialReferenceIndex)
-                    //        {
-                    //            case 0:
-                    //                spatialReference = SpatialReferences.Wgs84;
-                    //                break;
-                    //            case 1:
-                    //                spatialReference = SpatialReferences.WebMercator;
-                    //                break;
-                    //            case 2:
-                    //                spatialReference = SpatialReference.Create(4269);
-                    //                break;
-                    //            case 3:
-                    //                spatialReference = SpatialReference.Create(4490);
-                    //                break;
-                    //            case 4:
-                    //                spatialReference = SpatialReference.Create(3035);
-                    //                break;
-                    //            default:
-                    //                spatialReference = extent.SpatialReference;
-                    //                break;
-                    //        }
-
-                    //        MapPoint point = new MapPoint(x, y, z, spatialReference);
-
-                    //        Debug.WriteLine($"Adding point {x}, {y}, {spatialReference.WkText}");
-
-                    //        points[j] = point;
-                    //    }
-                    //    Multipoint multipoint = new Multipoint(points);
-                    //    Graphic graphic = new Graphic(multipoint);
-                    //    int symbolCount = 57;
-                    //    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
-                    //    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                    //    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                    //    graphic.Attributes["rotation_value"] = "50";
-                    //    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                    //    stage = $"adding point {i + 1}/{count}";
-                    //    graphicsOverlay.Graphics.Add(graphic);
-
-                    //    //foreach (MapPoint point in points)
-                    //    //{
-                    //    //    Debug.WriteLine($"Submitting point: {point.X}, {point.Y}, {point.Z}");
-                    //    //}
-                    //}
-
-                }
-                catch (Exception ex)
-                {
-                    drawClock.Stop();
-                    if (updateUi)
-                    {
-                        StatusLabel.Text = $"Point operation failed at {stage}: {ex.Message}";
-                    }
-                }
-                finally
-                {
-                    operationTimer.Stop();
-                    if (updateUi)
-                    {
-                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                    }
-                }
-            }
-            else if (geomType == "line")
-            {
-                SimpleRenderer lineRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Dash, System.Drawing.Color.Black, 5));
-                graphicsOverlay.Renderer = lineRenderer;
-                SymbolJsonEditor.Text = lineRenderer.ToJson();
-
-                MapPoint[] points = new MapPoint[count];
-
-                for (int i = 0; i < count; i++)
-                {
-                    double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                    double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                    double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                    MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
-
-                    points[i] = point;
-                }
-                Polyline line = new Polyline(points, extent.SpatialReference);
-                Graphic graphic = new Graphic(line);
-                graphicsOverlay.Graphics.Add(graphic);
-                drawClock.Stop();
-                if (updateUi)
-                {
-                    DrawTimer.Text = $"{drawClock.ElapsedMilliseconds} ms // draw time";
-                }
-
-                //SymbolJsonEditor.Text = lineRenderer.ToJson();
-                //double xRange = extent.XMax - extent.XMin;
-                //double yRange = extent.YMax - extent.YMin;
-                //double xStep = xRange / (count - 1);
-                //double yStep = yRange / (count - 1);
-                //for (int i = 0; i < count; i++)
-                //{
-
-                //    double currentXMin = extent.XMin + (i * xStep);
-                //    double currentXMax = extent.XMin + ((i + 1) * xStep);
-                //    // double currentYMin = extent.YMin + (i * yStep);
-                //    // double currentYMax = extent.YMin + ((i + 1) * yStep);
-
-                //    double x1 = currentXMin;
-                //    double y1 = extent.YMin;
-                //    double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                //    MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
-
-                //    double x2 = currentXMax;
-                //    double y2 = extent.YMax;
-                //    double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                //    MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
-
-                //    Polyline line = new Polyline(new MapPoint[] { point1, point2 }, extent.SpatialReference);
-
-                //    Graphic graphic = new Graphic(line);
-                //    int symbolCount = 33;
-                //    graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
-                //    graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                //    graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                //    graphic.Attributes["rotation_value"] = "50";
-                //    graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                //    graphicsOverlay.Graphics.Add(graphic);
-                //}
-                //operationTimer.Stop();
-
-                //if (updateUi)
-                //{
-                //    EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                //    StatusLabel.Text = $"Added {count} line graphics.";
-                //}
-            }
-            else if (geomType == "polygon")
-            {
-                // SimpleRenderer interimRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Orange, null));
-                // graphicsOverlay.Renderer = interimRenderer;
-                // //SymbolJsonEditor.Text = interimRenderer.ToJson();
-                // double xRange = extent.XMax - extent.XMin;
-                // double yRange = extent.YMax - extent.YMin;
-                // double xStep = xRange / (count - 1);
-                // double yStep = yRange / (count - 1);
-                // for (int i = 0; i < count; i++)
-                // {
-                //     double currentXMin = extent.XMin + (i * xStep);
-                //     double currentXMax = extent.XMin + ((i + 1) * xStep);
-                //     // double currentYMin = extent.YMin + (i * yStep);
-                //     // double currentYMax = extent.YMin + ((i + 1) * yStep);
-
-                //     double x1 = currentXMin;
-                //     double y1 = extent.YMin;
-                //     double z1 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                //     MapPoint point1 = new MapPoint(x1, y1, z1, extent.SpatialReference);
-
-                //     double x2 = currentXMax;
-                //     double y2 = extent.YMin;
-                //     double z2 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                //     MapPoint point2 = new MapPoint(x2, y2, z2, extent.SpatialReference);
-                                        
-                //     double x3 = currentXMax;
-                //     double y3 = extent.YMax;
-                //     double z3 = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                //     MapPoint point3 = new MapPoint(x3, y3, z3, extent.SpatialReference);
-
-                //     Polygon polygon = new Polygon(new MapPoint[] { point1, point2, point3 }, extent.SpatialReference);
-
-                //     Graphic graphic = new Graphic(polygon);
-                //     int symbolCount = 8;
-                //     graphic.Attributes["class_value"] = ((i + 1) % symbolCount) + 1;
-                //     graphic.Attributes["size_value"] = random.Next(0, 100 + 1);
-                //     graphic.Attributes["transparency_value"] = random.Next(0, 100 + 1);
-                //     graphic.Attributes["rotation_value"] = "50";
-                //     graphic.Attributes["color_value"] = random.Next(0, 100 + 1);
-                //     graphicsOverlay.Graphics.Add(graphic);
-                // }
-
-                try
-                {
-                    SimpleRenderer polygonRenderer = new SimpleRenderer(new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Purple, new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Black, 2)));
-                    graphicsOverlay.Renderer = polygonRenderer;
-                    SymbolJsonEditor.Text = polygonRenderer.ToJson();
-
-                    MapPoint[] points = new MapPoint[count];
-
-                    for (int i = 0; i < count; i++)
-                    {
-                        double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                        double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                        double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                        MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
-
-                        points[i] = point;
-                    }
-                    Polygon polygon = new Polygon(points, extent.SpatialReference);
-                    Graphic graphic = new Graphic(polygon);
-                    graphicsOverlay.Graphics.Add(graphic);
-
-                    // using var sourceStream = await FileSystem.OpenAppPackageFileAsync("SF_polygons.json");
-                    // using var reader = new StreamReader(sourceStream);
-                    // JsonNode? featureSet = JsonNode.Parse(await reader.ReadToEndAsync());
-                    // JsonArray? features = featureSet?["features"]?.AsArray();
-                    // JsonNode? spatialReference = featureSet?["spatialReference"];
-                    // if (features == null || spatialReference == null)
-                    // {
-                    //     throw new InvalidDataException("The polygon JSON is missing features or a spatial reference.");
-                    // }
-
-                    // int polygonCount = Math.Min(count, features.Count);
-                    // for (int i = 0; i < polygonCount; i++)
-                    // {
-                    //     if (features[i]?["geometry"]?.DeepClone() is not JsonObject geometryJson)
-                    //     {
-                    //         continue;
-                    //     }
-
-                    //     geometryJson["spatialReference"] = spatialReference.DeepClone();
-                    //     Geometry geometry = Geometry.FromJson(geometryJson.ToJsonString());
-                    //     var fillColor = System.Drawing.Color.FromArgb(
-                    //         random.Next(40, 231),
-                    //         random.Next(40, 231),
-                    //         random.Next(40, 231));
-                    //     var graphic = new Graphic(geometry)
-                    //     {
-                    //         Symbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, fillColor, null)
-                    //     };
-                    //     graphicsOverlay.Graphics.Add(graphic);
-                    // }
-
-                    operationTimer.Stop();
-                    if (updateUi)
-                    {
-                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                        StatusLabel.Text = $"Added {count} vertex polygon graphic.";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    operationTimer.Stop();
-                    if (updateUi)
-                    {
-                        StatusLabel.Text = $"Polygon operation failed: {ex.Message}";
-                    }
-                }
-
-
-            }
-            //Graphic lastAdded = graphicsOverlay.Graphics.Last();
-            //if (lastAdded.Geometry is Multipoint lastAddedGeom)
-            //{
-            //    List<MapPoint> lastAddedPoints = lastAddedGeom.Points.ToList();
-
-            //    foreach (MapPoint point in lastAddedPoints)
-            //    {
-            //        Debug.WriteLine($"Final point: {point.X}, {point.Y}, {point.Z}");
-            //    }
-            //}
-        }
-
-        private void OnRemoveGraphicsClicked(object sender, EventArgs e)
-        {
-            RemoveGraphicsOperation(updateUi: true);
-        }
-
-        private void RemoveGraphicsOperation(bool updateUi)
-        {
-            int count = GetRequestedCount();
-            if (count <= 0)
-            {
-                return;
-            }
-
-            int removeCount = Math.Min(count, graphicsOverlay.Graphics.Count);
-
-            if (updateUi)
-            {
-                EventTimer.Text = " // event time";
-                DrawTimer.Text = " // draw time";
-            }
-            Stopwatch operationTimer = Stopwatch.StartNew();
-            if (updateUi)
-            {
-                drawClock.Reset();
-                drawClock.Start();
-            }
-
-
-            for (int i = 0; i < removeCount; i++)
-            {
-                graphicsOverlay.Graphics.RemoveAt(graphicsOverlay.Graphics.Count - 1);
-            }
-
-            operationTimer.Stop();
-            if (updateUi)
-            {
-                EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                StatusLabel.Text = $"Removed {removeCount} graphics.";
-            }
-        }
-
-        private async void OnRendererSelectionChanged(object sender, EventArgs e)
-        {
-            if (sender is not Picker picker || picker.SelectedIndex < 0)
-            {
-                return;
-            }
-
-            const int jsonRendererIndex = 6;
-            JsonRendererPanel.IsVisible = picker.SelectedIndex == jsonRendererIndex;
-
-            if (picker.SelectedIndex != jsonRendererIndex)
-            {
-                await SwapRendererOperationAsync(picker.SelectedIndex, updateUi: true);
-            }
-        }
-
-        private async Task SwapRendererOperationAsync(int rendererIndex, bool updateUi)
-        {
-            if (updateUi)
-            {
-                EventTimer.Text = " // event time";
-                DrawTimer.Text = " // draw time";
-            }
-            Stopwatch operationTimer = Stopwatch.StartNew();
-            if (updateUi)
-            {
-                drawClock.Reset();
-                drawClock.Start();
-            }
-
-
-            switch (rendererIndex)
-            {
-                case 0:
-                    graphicsOverlay.Renderer = redCircle;
-                    operationTimer.Stop();
-                    if (updateUi)
-                    {
-                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                        StatusLabel.Text = $"Renderer set to simple red circle.";
-                    }
-                    break;
-                case 1:
-                    SimpleRenderer blueSquare = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Diamond, System.Drawing.Color.Blue, 20));
-                    graphicsOverlay.Renderer = blueSquare;
-                    operationTimer.Stop();
-                    if (updateUi)
-                    {
-                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                        StatusLabel.Text = $"Renderer set to simple red circle.";
-                    }
-                    break;
-                case 2:
-                    try
-                    {
-                        UniqueValueRenderer uniqueValueModels = new UniqueValueRenderer();
-                        uniqueValueModels.FieldNames.Add("class_value");
-
-                        MultilayerPointSymbol modelSymbol1 = await createModelLayerFromFile("1");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 1", "1.glb", modelSymbol1, "1"));
-
-                        MultilayerPointSymbol modelSymbol2 = await createModelLayerFromFile("2");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 2", "2.glb", modelSymbol2, "2"));
-
-                        MultilayerPointSymbol modelSymbol3 = await createModelLayerFromFile("3");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 3", "3.glb", modelSymbol3, "3"));
-
-                        MultilayerPointSymbol modelSymbol4 = await createModelLayerFromFile("4");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 4", "4.glb", modelSymbol4, "4"));
-
-                        MultilayerPointSymbol modelSymbol5 = await createModelLayerFromFile("5");
-                        uniqueValueModels.UniqueValues.Add(new UniqueValue("Model 5", "5.glb", modelSymbol5, "5"));
-
-                        uniqueValueModels.DefaultSymbol = modelSymbol1;
-                        uniqueValueModels.DefaultLabel = "Default model";
-
-                        graphicsOverlay.Renderer = uniqueValueModels;
-                        operationTimer.Stop();
-                        if (updateUi)
-                        {
-                            EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                            StatusLabel.Text = $"Renderer set to 3D model unique values.";
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        operationTimer.Stop();
-                        if (updateUi)
-                        {
-                            EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                            StatusLabel.Text = $"Model renderer failed: {ex.Message}";
-                        }
-                    }
-                    break;
-                case 3:
-                    try
-                    {
-                        UniqueValueRenderer uniqueValuePictures = new UniqueValueRenderer();
-                        uniqueValuePictures.FieldNames.Add("class_value");
-
-                        MultilayerPointSymbol pictureSymbol1 = await createPictureLayerFromFile("1");
-                        uniqueValuePictures.UniqueValues.Add(new UniqueValue("Picture 1", "1.png", pictureSymbol1, "1"));
-
-                        MultilayerPointSymbol pictureSymbol2 = await createPictureLayerFromFile("2");
-                        uniqueValuePictures.UniqueValues.Add(new UniqueValue("Picture 2", "2.png", pictureSymbol2, "2"));
-
-                        MultilayerPointSymbol pictureSymbol3 = await createPictureLayerFromFile("3");
-                        uniqueValuePictures.UniqueValues.Add(new UniqueValue("Picture 3", "3.png", pictureSymbol3, "3"));
-
-                        MultilayerPointSymbol pictureSymbol4 = await createPictureLayerFromFile("4");
-                        uniqueValuePictures.UniqueValues.Add(new UniqueValue("Picture 4", "4.png", pictureSymbol4, "4"));
-
-                        MultilayerPointSymbol pictureSymbol5 = await createPictureLayerFromFile("5");
-                        uniqueValuePictures.UniqueValues.Add(new UniqueValue("Picture 5", "5.png", pictureSymbol5, "5"));
-
-
-                        uniqueValuePictures.DefaultSymbol = pictureSymbol1;
-                        uniqueValuePictures.DefaultLabel = "Default Picture";
-
-                        graphicsOverlay.Renderer = uniqueValuePictures;
-                        operationTimer.Stop();
-                        if (updateUi)
-                        {
-                            EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                            StatusLabel.Text = $"Renderer set to picture unique values.";
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        operationTimer.Stop();
-                        if (updateUi)
-                        {
-                            EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                            StatusLabel.Text = $"Picture renderer failed: {ex.Message}";
-                        }
-                    }
-                    break;
-                case 4:
-                    UniqueValueRenderer textSymbolRenderer = new UniqueValueRenderer();
-                    textSymbolRenderer.FieldNames.Add("class_value");
-
-                    TextSymbol textSymbol1 = new TextSymbol("abc", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
-                    textSymbol1.FontDecoration = FontDecoration.LineThrough;
-                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("Text symbol 1", "1.png", textSymbol1, "1"));
-
-                    TextSymbol textSymbol2 = new TextSymbol("def", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
-                    textSymbol2.HaloColor = System.Drawing.Color.White;
-                    textSymbol2.HaloWidth = 3;
-                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("Text symbol 2", "2.png", textSymbol2, "2"));
-
-                    TextSymbol textSymbol3 = new TextSymbol("ghi", System.Drawing.Color.White, 48, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
-                    textSymbol3.OutlineColor = System.Drawing.Color.Teal;
-                    textSymbol3.OutlineWidth = 1;
-                    //textSymbol3.FontWeight = Esri.ArcGISRuntime.Symbology.FontWeight.Bold;
-                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("Text symbol 3", "3.png", textSymbol3, "3"));
-
-                    TextSymbol textSymbol4 = new TextSymbol("line1\nline2", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Right, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Bottom);
-                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("line1\nline2", "4.png", textSymbol4, "4"));
-
-                    TextSymbol textSymbol5 = new TextSymbol("jkl", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
-                    textSymbol5.BackgroundColor = System.Drawing.Color.Orange;
-                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("5", "5.png", textSymbol5, "5"));
-
-                    TextSymbol textSymbol6 = new TextSymbol("mno", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
-                    textSymbol6.FontFamily = "Arial";
-                    textSymbol6.FontDecoration = FontDecoration.Underline;
-                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("6", "6.png", textSymbol6, "6"));
-
-                    TextSymbol textSymbol7 = new TextSymbol("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", System.Drawing.Color.Black, 25, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Top);
-                    textSymbolRenderer.UniqueValues.Add(new UniqueValue("7", "7.png", textSymbol7, "7"));
-
-
-                    textSymbolRenderer.DefaultSymbol = textSymbol1;
-                    textSymbolRenderer.DefaultLabel = "Default Text";
-
-                    graphicsOverlay.Renderer = textSymbolRenderer;
-
-                    SymbolJsonEditor.Text = textSymbolRenderer.ToJson();
-
-                    //string symbolFilePath = "TextSymbols.stylx";
-                    //SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
-
-                    //SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
-                    //SymbolStyleSearchParameters searchParams1 = new SymbolStyleSearchParameters();
-
-                    //IList<SymbolStyleSearchResult> styleResults = await _pointSymbols.SearchSymbolsAsync(searchParams1);
-
-                    //UniqueValueRenderer styleUniqueRenderer = new UniqueValueRenderer();
-                    //styleUniqueRenderer.FieldNames.Add("class_value");
-
-                    //int symbolIndex = 1;
-
-                    //foreach (SymbolStyleSearchResult result in styleResults)
-                    //{
-                    //    // MultilayerPointSymbol multiLayerSym = await result.GetSymbolAsync() as MultilayerPointSymbol;
-                    //    Symbol multiLayerSym = await result.GetSymbolAsync();
-
-                    //    styleUniqueRenderer.UniqueValues.Add(new UniqueValue(result.Name, result.Key, multiLayerSym, symbolIndex.ToString()));
-
-                    //    Debug.WriteLine($"Added symbol to renderer: {result.Name}, type: {multiLayerSym.GetType().Name ?? "Unknown"}");
-
-                    //    symbolIndex++;
-                    //}
-
-                    //graphicsOverlay.Renderer = styleUniqueRenderer;
-                    break;
-                case 5:
-                    ClassBreaksRenderer classBreaksRenderer = new ClassBreaksRenderer();
-
-                    classBreaksRenderer.FieldName = "class_breaks";
-                    Symbol lowSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Solid, System.Drawing.Color.Green, null);
-                    Symbol mediumSymbol = new SimpleFillSymbol(SimpleFillSymbolStyle.Cross, System.Drawing.Color.Yellow, new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Black, 4));
-                    //Symbol lowSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Green, 25);
-                    //Symbol mediumSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Yellow, 30);
-                    Symbol highSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 35);
-                    Symbol defaultSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Triangle, System.Drawing.Color.Orange, 15);
-                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Low", "0-2", 0, 2, lowSymbol));
-                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("Medium", "3-5", 3, 5, mediumSymbol));
-                    classBreaksRenderer.ClassBreaks.Add(new ClassBreak("High", "6-9", 6, 9, highSymbol));
-
-                    // Testing background
-                    SimpleFillSymbol backgroundFill = new SimpleFillSymbol(SimpleFillSymbolStyle.Vertical, System.Drawing.Color.Pink, null);
-                    classBreaksRenderer.BackgroundFillSymbol = backgroundFill;
-
-                    classBreaksRenderer.DefaultSymbol = defaultSymbol;
-
-                    graphicsOverlay.Renderer = classBreaksRenderer;
-                    SymbolJsonEditor.Text = classBreaksRenderer.ToJson();
-                    operationTimer.Stop();
-
-                    if (updateUi)
-                    {
-                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                        StatusLabel.Text = $"Renderer set to class breaks.";
-                    }
-                    break;
-                default:
-                    graphicsOverlay.Renderer = redCircle;
-                    operationTimer.Stop();
-                    if (updateUi)
-                    {
-                        EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                        StatusLabel.Text = $"Renderer set to simple red circle.";
-                    }
-                    break;
-            }
-        }
-
-        private void OnApplyJsonRendererClicked(object sender, EventArgs e)
-        {
-            string json = RendererJsonEditor.Text?.Trim() ?? string.Empty;
-
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                StatusLabel.Text = "Enter renderer JSON.";
-                return;
-            }
-
             try
             {
-                Renderer? renderer = Renderer.FromJson(json);
-                if (renderer == null)
+                var localSceneView = sceneView;
+                if (localSceneView == null)
                 {
-                    StatusLabel.Text = "Renderer JSON did not produce a renderer.";
+                    Debug.WriteLine("Scene view is not ready.");
                     return;
                 }
 
-                graphicsOverlay.Renderer = renderer;
-                StatusLabel.Text = "JSON renderer applied.";
+                localSceneView.WarningsChanged += SceneView_WarningsChanged;
+
+                var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISChartedTerritory);
+                var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
+
+
+                string _elevationServiceUrl = "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
+                Surface elevationSurface = new Surface();
+                ArcGISTiledElevationSource elevationSource = new ArcGISTiledElevationSource(new Uri(_elevationServiceUrl));
+                elevationSurface.ElevationSources.Add(elevationSource);
+                scene.BaseSurface = elevationSurface;
+
+                await scene.LoadAsync();
+
+                scene.BaseSurface.NavigationConstraint = NavigationConstraint.None;
+                graphicsOverlay.Renderer = defaultRenderer;
+                localSceneView.GraphicsOverlays?.Add(graphicsOverlay);
+
+                localSceneView.Scene = scene;
+
+                localSceneView.SetViewpointCamera(camera);
+                localSceneView.DrawStatusChanged += SceneView_DrawStatusChanged;
+                localSceneView.GeoViewTapped += OnSceneViewTapped_Default;
             }
             catch (Exception ex)
             {
-                StatusLabel.Text = $"Invalid renderer JSON: {ex.Message}";
+                Debug.WriteLine($"Error thrown: {ex.Message}");
             }
         }
 
-        private void OnApplyJsonSymbolClicked(object sender, EventArgs e)
+        async private Task AddGraphicsOperation(Geometry geometry)
         {
-            string json = (SymbolJsonEditor.Text ?? string.Empty).Trim().Trim('"', '\'');
-            string sizeUp = json.Replace("\"size\":16", "\"size\":42");
-            int count = GetRequestedCount();
-            if (count <= 0)
+            Graphic graphic = new Graphic(geometry);
+            graphicsOverlay.Graphics.Add(graphic);
+        }
+
+        private void RemoveGraphicsOperation(int? count = null, int? index = null)
+        {
+            if (count.HasValue)
             {
-                return;
+                int removeCount = Math.Min(count.Value, graphicsOverlay.Graphics.Count);
+                for (int i = 0; i < removeCount; i++)
+                {
+                    graphicsOverlay.Graphics.RemoveAt(graphicsOverlay.Graphics.Count - 1);
+                }
             }
-
-            if (string.IsNullOrWhiteSpace(sizeUp))
+            if (index.HasValue)
             {
-                StatusLabel.Text = "Enter symbol JSON.";
-                return;
-            }
-
-            try
-            {
-                Symbol? symbol = Symbol.FromJson(sizeUp);
-
-                if (symbol == null)
+                if (index.Value >= 0 && index.Value < graphicsOverlay.Graphics.Count)
                 {
-                    StatusLabel.Text = "Symbol JSON did not produce a symbol.";
-                    return;
+                    graphicsOverlay.Graphics.RemoveAt(index.Value);
                 }
-
-                SimpleLineSymbol simpleLine = symbol as SimpleLineSymbol;
-                if (simpleLine != null)
-                {
-                    Debug.WriteLine("Converting to multilayer line symbol");
-                    MultilayerPolylineSymbol multiLayerLine = simpleLine.ToMultilayerSymbol();
-                    for (int i = 0; i < count; i++)
-                    {
-                        graphicsOverlay.Graphics[i].Symbol = multiLayerLine;
-                    }
-                    return;
-                }
-                PictureFillSymbol pictureFillSymbol = symbol as PictureFillSymbol;
-                if (pictureFillSymbol != null)
-                {
-                    Debug.WriteLine("Converting to multilayer picture fill symbol");
-                    MultilayerPolygonSymbol multiLayerPolygon = pictureFillSymbol.ToMultilayerSymbol();
-                    for (int i = 0; i < count; i++)
-                    {
-                        graphicsOverlay.Graphics[i].Symbol = multiLayerPolygon;
-                    }
-                    return;
-                }
-                SimpleFillSymbol simpleFillSymbol = symbol as SimpleFillSymbol;
-                if (simpleFillSymbol != null)
-                {
-                    Debug.WriteLine("Converting to multilayer simple fill symbol");
-                    MultilayerPolygonSymbol multiLayerPolygon = simpleFillSymbol.ToMultilayerSymbol();
-                    for (int i = 0; i < count; i++)
-                    {
-                        graphicsOverlay.Graphics[i].Symbol = multiLayerPolygon;
-                    }
-                    return;
-                }
-                SimpleMarkerSymbol simpleMarker = symbol as SimpleMarkerSymbol;
-                if (simpleLine != null)
-                {
-                    Debug.WriteLine("Converting to multilayer marker symbol");
-                    MultilayerPointSymbol multiLayerMarker = simpleMarker.ToMultilayerSymbol();
-                    for (int i = 0; i < count; i++)
-                    {
-                        graphicsOverlay.Graphics[i].Symbol = multiLayerMarker;
-                    }
-                    return;
-                }
-                PictureMarkerSymbol pictureMarker = symbol as PictureMarkerSymbol;
-                if (simpleLine != null)
-                {
-                    Debug.WriteLine("Converting to multilayer picture marker symbol");
-                    MultilayerPointSymbol multiLayerPictureMarker = pictureMarker.ToMultilayerSymbol();
-                    for (int i = 0; i < count; i++)
-                    {
-                        graphicsOverlay.Graphics[i].Symbol = multiLayerPictureMarker;
-                    }
-                    return;
-                }
-                    
-                Debug.WriteLine("Symbol cannot be converted to multilayer explicitly");
-
-
-                for (int i = 0; i < count; i++)
-                {
-                    graphicsOverlay.Graphics[i].Symbol = symbol;
-                }
-                StatusLabel.Text = "JSON symbol applied";
-
-                SymbolJsonEditor.Text = symbol.ToJson();
-            }
-            catch (Exception ex)
-            {
-                StatusLabel.Text = $"Invalid symbol JSON: {ex.Message}";
             }
         }
 
-        private async void OnSwapPlacementClicked(object sender, EventArgs e)
+
+        async private Task<MultilayerPointSymbol> createModelLayerFromFile(string fileName, int size = 50)
         {
-            await SwapPlacementOperationAsync(updateUi: true);
-        }
-
-        private async Task SwapPlacementOperationAsync(bool updateUi)
-        {
-            surfacePlacement++;
-            if (surfacePlacement > 4)
-            {
-                surfacePlacement = 0;
-            }
-
-            switch (surfacePlacement)
-            {
-                case 0:
-                    graphicsOverlay.SceneProperties.SurfacePlacement = SurfacePlacement.Absolute;
-                    if (updateUi)
-                    {
-                        StatusLabel.Text = "Overlay's surface placement updated to absolute.";
-                    }
-                    break;
-                case 1:
-                    graphicsOverlay.SceneProperties.SurfacePlacement = SurfacePlacement.Relative;
-                    if (updateUi)
-                    {
-                        StatusLabel.Text = "Overlay's surface placement updated to relative.";
-                    }
-                    break;
-                case 2:
-                    graphicsOverlay.SceneProperties.SurfacePlacement = SurfacePlacement.DrapedBillboarded;
-                    if (updateUi)
-                    {
-                        StatusLabel.Text = "Overlay's surface placement updated to draped billboarded.";
-                    }
-                    break;
-                case 3:
-                    graphicsOverlay.SceneProperties.SurfacePlacement = SurfacePlacement.DrapedFlat;
-                    if (updateUi)
-                    {
-                        StatusLabel.Text = "Overlay's surface placement updated to draped flat.";
-                    }
-                    break;
-       
-                case 4:
-                    graphicsOverlay.SceneProperties.SurfacePlacement = SurfacePlacement.RelativeToScene;
-                    if (updateUi)
-                    {
-                        StatusLabel.Text = "Overlay's surface placement updated to relative to scene.";
-                    }
-                    break;
-                default:
-                    graphicsOverlay.SceneProperties.SurfacePlacement = SurfacePlacement.Absolute;
-                    if (updateUi)
-                    {
-                        StatusLabel.Text = "Overlay's surface placement updated to absolute.";
-                    }
-                    break;
-
-                    
-            }
-        }
-
-        private async void OnAddAltitudeOffsetClicked(object sender, EventArgs e)
-        {
-            await AddAltitudeOffsetOperationAsync(updateUi: true);
-        }
-
-        private async Task AddAltitudeOffsetOperationAsync(bool updateUi)
-        {
-            graphicsOverlay.SceneProperties.AltitudeOffset += 10000;
-            if (updateUi)
-            {
-                StatusLabel.Text = $"Altitude offset increased to: {graphicsOverlay.SceneProperties.AltitudeOffset}";
-            }
-        }
-
-        async private Task<MultilayerPointSymbol> createModelLayerFromFile(string fieldValue, int size = 50)
-        {
-            string file = $"{fieldValue}.glb";
+            string file = $"{fileName}.glb";
 
             string filePath = Path.Combine(FileSystem.CacheDirectory, file);
             {
@@ -1206,493 +160,287 @@ namespace NETGraphicsTester
             return multilayerSymbol;
         }
 
-        private void OnMoveGraphicsUniformClicked(object sender, EventArgs e)
-        {
-            MoveGraphicsUniformOperation(updateUi: true);
-        }
 
-        private void MoveGraphicsUniformOperation(bool updateUi)
+        private void MoveGraphics(int index, Geometry newGeometry)
         {
-            int count = GetRequestedCount();
-            if (count <= 0)
+            if (index < 0 || index >= graphicsOverlay.Graphics.Count)
             {
                 return;
             }
 
-            double dx = random.Next(-1000, 1000);
-            double dy = random.Next(-1000, 1000);
-            double dz = random.Next(-1000, 1000);
-
-            int graphicsToMove = Math.Min(count, graphicsOverlay.Graphics.Count);
-
-            if (updateUi)
-            {
-                EventTimer.Text = " // event time";
-                DrawTimer.Text = " // draw time";
-            }
-            Stopwatch operationTimer = Stopwatch.StartNew();
-            if (updateUi)
-            {
-                drawClock.Reset();
-                drawClock.Start();
-            }
-
-            for (int i = 0; i < graphicsToMove; i++)
-            {
-                Graphic graphic = graphicsOverlay.Graphics[i];
-
-                if (graphic.Geometry is Geometry geometry && !geometry.IsEmpty)
-                {
-                    graphic.Geometry = GeometryEngine.Move(geometry, dx, dy);
-                }
-            }
-
-            operationTimer.Stop();
-            if (updateUi)
-            {
-                EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                StatusLabel.Text = $"Moved {graphicsToMove} graphics by ({dx:0}, {dy:0}).";
-            }
+            Graphic graphic = graphicsOverlay.Graphics[index];
+            graphic.Geometry = newGeometry;
         }
 
-        private void OnMoveGraphicsRandomClicked(object sender, EventArgs e)
+        private void ToggleGraphicsVisibility(int index)
         {
-            MoveGraphicsRandomOperation(updateUi: true);
-        }
-
-        private void MoveGraphicsRandomOperation(bool updateUi)
-        {
-            int count = GetRequestedCount();
-            if (count <= 0)
+            if (graphicsOverlay.Graphics[index].IsVisible)
             {
-                return;
-            }
-
-            int graphicsToMove = Math.Min(count, graphicsOverlay.Graphics.Count);
-
-            if (updateUi)
-            {
-                EventTimer.Text = " // event time";
-                DrawTimer.Text = " // draw time";
-            }
-            Stopwatch operationTimer = Stopwatch.StartNew();
-            if (updateUi)
-            {
-                drawClock.Reset();
-                drawClock.Start();
-            }
-
-
-            for (int i = 0; i < graphicsToMove; i++)
-            {
-                double dx = random.Next(-100, 100);
-                double dy = random.Next(-100, 100);
-                double dz = random.Next(-100, 100);
-                Graphic graphic = graphicsOverlay.Graphics[i];
-
-                if (graphic.Geometry is MapPoint currentPoint)
-                {
-                    MapPoint movedPoint = new MapPoint(
-                        currentPoint.X + dx,
-                        currentPoint.Y + dy,
-                        currentPoint.Z + dz,
-                        currentPoint.SpatialReference);
-
-                    graphic.Geometry = movedPoint;
-                } else if (graphic.Geometry is Multipoint multipoint)
-                {
-                    int new_count = random.Next(3, 10);
-                    List<MapPoint> originalPoints = multipoint.Points.ToList();
-
-                    if (originalPoints.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    List<MapPoint> newPoints = new List<MapPoint>(new_count);
-
-                    for (int pointIndex = 0; pointIndex < new_count; pointIndex++)
-                    {
-                        MapPoint sourcePoint = pointIndex < originalPoints.Count
-                            ? originalPoints[pointIndex]
-                            : originalPoints[random.Next(originalPoints.Count)];
-                        
-                        double pdx = random.Next(-100, 100);
-                        double pdy = random.Next(-100, 100);
-                        double pdz = random.Next(-100, 100);
-
-                        newPoints.Add(new MapPoint(
-                            sourcePoint.X + pdx,
-                            sourcePoint.Y + pdy,
-                            sourcePoint.Z + pdz,
-                            sourcePoint.SpatialReference));
-                    }
-
-                    graphic.Geometry = new Multipoint(newPoints, multipoint.SpatialReference);  
-                }
-            }
-
-            operationTimer.Stop();
-            if (updateUi)
-            {
-                EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                StatusLabel.Text = $"Moved {graphicsToMove} graphics randomly.";
-            }
-        }
-
-        async private void OnAddSymbolsClicked(object sender, EventArgs e)
-        {
-            await AddSymbolsOperationAsync(updateUi: true);
-        }
-
-        private async Task AddSymbolsOperationAsync(bool updateUi)
-        {
-            int count = GetRequestedCount();
-            if (count <= 0)
-            {
-                return;
-            }
-
-            int assignCount = Math.Min(count, graphicsOverlay.Graphics.Count);
-
-            if (updateUi)
-            {
-                EventTimer.Text = " // event time";
-                DrawTimer.Text = " // draw time";
-            }
-            Stopwatch operationTimer = Stopwatch.StartNew();
-            if (updateUi)
-            {
-                drawClock.Reset();
-                drawClock.Start();
-            }
-
-            string symbolFilePath = "MinShipSymbols_round2_points.stylx";
-            SymbolStyle _pointSymbols = await SymbolStyle.OpenAsync(symbolFilePath);
-
-            SymbolStyleSearchParameters searchParams = await _pointSymbols.GetDefaultSearchParametersAsync();
-
-            IList<SymbolStyleSearchResult> styleResults = await _pointSymbols.SearchSymbolsAsync(searchParams);
-
-
-            IList<Symbol> symbolList = new List<Symbol>();
-
-            foreach (SymbolStyleSearchResult result in styleResults)
-            {
-                Symbol symbol = await result.GetSymbolAsync();
-
-                symbolList.Add(symbol);
-            }
-
-            Debug.WriteLine($"Built list of {symbolList.Count} symbols");
-
-            for (int i = 0; i < assignCount; i++)
-            {
-                int symbolCount = symbolList.Count;
-
-                int symbolType = random.Next(1, symbolCount);
-                Graphic graphic = graphicsOverlay.Graphics[i];
-
-                Symbol nextUpSymbol = symbolList[symbolType];
-
-                try
-                {
-                    graphic.Symbol = nextUpSymbol;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error applying symbol: {ex.Message}");
-                }
-                    
-
-            }
-
-            operationTimer.Stop();
-            if (updateUi)
-            {
-                EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                StatusLabel.Text = $"Assigned symbols to {assignCount} graphics. Symbol type ratio: {symbolTypeCounts[0]}S / {symbolTypeCounts[1]} M / {symbolTypeCounts[2]} P";
-                symbolTypeCounts[0] = 0;
-                symbolTypeCounts[1] = 0;
-                symbolTypeCounts[2] = 0;
-            }
-        }
-
-        private void OnRemoveOverlayClicked(object sender, EventArgs e)
-        {
-            RemoveOverlayOperation(updateUi: true);
-        }
-
-        private void RemoveOverlayOperation(bool updateUi)
-        {
-            var localSceneView = sceneView;
-            if (localSceneView == null)
-            {
-                return;
-            }
-
-            var overlays = localSceneView.GraphicsOverlays;
-            if (overlays == null)
-            {
-                return;
-            }
-
-            overlays.Remove(graphicsOverlay);
-
-            if (updateUi)
-            {
-                StatusLabel.Text = $"Removed overlay.";
-            }
-        }
-        private void OnAddOverlayClicked(object sender, EventArgs e)
-        {
-            AddOverlayOperation(updateUi: true);
-        }
-
-        private void AddOverlayOperation(bool updateUi)
-        {
-            var localSceneView = sceneView;
-            if (localSceneView == null)
-            {
-                return;
-            }
-
-            var overlays = localSceneView.GraphicsOverlays;
-            if (overlays == null)
-            {
-                return;
-            }
-
-            overlays.Add(graphicsOverlay);
-
-            if (updateUi)
-            {
-                StatusLabel.Text = $"Added overlay.";
-            }
-        }
-
-        private void OnToggleVisibiltyClicked(object sender, EventArgs e)
-        {
-            ToggleVisibilityOperation(updateUi: true);
-        }
-
-        private void ToggleVisibilityOperation(bool updateUi)
-        {
-            overlayVisibilty = !overlayVisibilty;
-
-            graphicsOverlay.IsVisible = overlayVisibilty;
-
-            if (updateUi)
-            {
-                StatusLabel.Text = $"Overlay visibilty set to {overlayVisibilty}";
-            }
-        }
-
-        private void OnToggleOpacityClicked(object sender, EventArgs e)
-        {
-            ToggleOpacityOperation(updateUi: true);
-        }
-
-        private void ToggleOpacityOperation(bool updateUi)
-        {
-            if (currentOpacity == 0.0)
-            {
-                currentOpacity = 1.0;
+                graphicsOverlay.Graphics[index].IsVisible = false;
             } else
             {
-                currentOpacity -= .25;
-            }
-      
-            graphicsOverlay.Opacity = currentOpacity;
-
-            if (updateUi)
-            {
-                StatusLabel.Text = $"Overlay opacity is set to {currentOpacity}";
+                graphicsOverlay.Graphics[index].IsVisible = true;
             }
         }
 
-        private void OnToggleGraphicsVisibilityClicked(object sender, EventArgs e)
+        private async void OnSceneViewTapped_Default(object? sender, Esri.ArcGISRuntime.Maui.GeoViewInputEventArgs e)
         {
-            ToggleGraphicsVisibilityOperation(updateUi: true);
+            Debug.WriteLine($"Scene view tapped at position: {e.Position}");
         }
 
-        private void ToggleGraphicsVisibilityOperation(bool updateUi)
+        private bool ResetAndClear()
         {
-            int count = GetRequestedCount();
-            if (count <= 0)
+            if (!_sceneReady)
             {
+                Debug.WriteLine("Cannot reset graphics: the scene is not ready.");
+                return false;
+            }
+
+            var overlays = sceneView.GraphicsOverlays;
+            if (overlays is null)
+            {
+                Debug.WriteLine("Cannot reset graphics: overlays are unavailable.");
+                return false;
+            }
+
+            sceneView.GeoViewTapped -= OnSceneViewTapped_AddGraphics;
+            sceneView.GeoViewTapped -= OnSceneViewTapped_IdentifyOn;
+
+            graphicsOverlay.Graphics.Clear();
+
+            var replacement = new GraphicsOverlay
+            {
+                Renderer = new SimpleRenderer(
+                    new SimpleMarkerSymbol(
+                        SimpleMarkerSymbolStyle.Circle,
+                        System.Drawing.Color.Yellow,
+                        15))
+            };
+
+            sceneView.GraphicsOverlays.Remove(graphicsOverlay);
+            graphicsOverlay = replacement;
+            sceneView.GraphicsOverlays.Add(graphicsOverlay);
+
+            graphicsCount = 0;
+            passiveMode = "normal";
+
+            return true;
+        }
+
+        private async void ExecuteWorkflow_ModelLODs(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[JS WORKFLOW 1] Use graphic to temporarily preview one LOD of a 3d model");
+        }
+
+        private async void ExecuteWorkflow_SearchResults(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[JS WORKFLOW 2] Drawing of points, search results and table clicking");
+        }
+
+        private async void ExecuteWorkflow_GPSAccuracy(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[JS WORKFLOW 3] Topmost accuracy layer to compare with GPS readings (GPS readings overlay)");
+        }
+
+        private async void ExecuteWorkflow_DataExtraction(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[JS WORKFLOW 4] Graphics as extraction points for underlying data");
+        }
+
+        private async void ExecuteWorkflow_EditingExport(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[JS WORKFLOW 5] Graphics as editing/sketch workflow, export of features");
+            passiveMode = "editingExport";
+            sceneView.GeoViewTapped += OnSceneViewTapped_AddGraphics;
+        }
+
+        private async void ExecuteWorkflow_SelectionHighlight(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[JS WORKFLOW 6] Selection highlight as separate overlay, using a feature table as source");
+            passiveMode = "selectionHighlight";
+
+            Envelope? extent = sceneView.GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry as Envelope;
+            MapPoint? center = sceneView.GetCurrentViewpoint(ViewpointType.CenterAndScale)?.TargetGeometry as MapPoint;
+            double baseZ = center?.Z ?? 0;
+            const double zRange = 500;
+
+            if (extent == null || center == null)
+            {
+                Debug.WriteLine("Extent or center is null");
                 return;
             }
-
-            int removeCount = Math.Min(count, graphicsOverlay.Graphics.Count);
-
-            if (updateUi)
+            // Add 10 random points
+            for (int i = 0; i < 10; i++)
             {
-                EventTimer.Text = " // event time";
-                DrawTimer.Text = " // draw time";
-            }
-            Stopwatch operationTimer = Stopwatch.StartNew();
-            if (updateUi)
-            {
-                drawClock.Reset();
-                drawClock.Start();
+                double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
+                double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
+                double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
+                MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
+
+                Graphic graphic = new Graphic(point);
+                graphicsOverlay.Graphics.Add(graphic);
             }
 
-
-            for (int i = 0; i < removeCount; i++)
-            {
-                if (graphicsOverlay.Graphics[i].IsVisible)
-                {
-                    graphicsOverlay.Graphics[i].IsVisible = false;
-                } else
-                {
-                    graphicsOverlay.Graphics[i].IsVisible = true;
-                }
-            }
-
-            operationTimer.Stop();
-            if (updateUi)
-            {
-                EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                StatusLabel.Text = $"Toggled visibility for {removeCount} graphics.";
-            }
+            // Turn on highlighting behavior
+            sceneView.GeoViewTapped += OnSceneViewTapped_IdentifyOn;
         }
 
-        private void OnToggleGraphicsSelectedClicked(object sender, EventArgs e)
+        private async void ExecuteWorkflow_MissileTrajectory(object? sender, EventArgs e)
         {
-            ToggleGraphicsSelectedOperation(updateUi: true);
+            ResetAndClear();
+            Debug.WriteLine("[.NET WORKFLOW 1] Choose two points as calc input, show missile trajectory");
+            passiveMode = "missileTrajectory";
+            sceneView.GeoViewTapped += OnSceneViewTapped_AddGraphics;
         }
 
-        private void ToggleGraphicsSelectedOperation(bool updateUi)
+        private async void ExecuteWorkflow_WebRenderer(object? sender, EventArgs e)
         {
-            int count = GetRequestedCount();
-            if (count <= 0)
-            {
-                return;
-            }
-
-            int removeCount = Math.Min(count, graphicsOverlay.Graphics.Count);
-
-            if (updateUi)
-            {
-                EventTimer.Text = " // event time";
-                DrawTimer.Text = " // draw time";
-            }
-            Stopwatch operationTimer = Stopwatch.StartNew();
-            if (updateUi)
-            {
-                drawClock.Reset();
-                drawClock.Start();
-            }
-
-
-            for (int i = 0; i < removeCount; i++)
-            {
-                if (graphicsOverlay.Graphics[i].IsSelected)
-                {
-                    graphicsOverlay.Graphics[i].IsSelected = false;
-                }
-                else
-                {
-                    graphicsOverlay.Graphics[i].IsSelected = true;
-                }
-            }
-
-            operationTimer.Stop();
-            if (updateUi)
-            {
-                EventTimer.Text = $"{operationTimer.ElapsedMilliseconds} ms // event time";
-                StatusLabel.Text = $"Toggled selection for {removeCount} graphics.";
-            }
+            ResetAndClear();
+            Debug.WriteLine("[.NET WORKFLOW 2] Class based + icon based renderers from web fetched json");
         }
 
-        private async void OnRunAnimationsClicked(object sender, EventArgs e)
+        private async void ExecuteWorkflow_CreateTrack(object? sender, EventArgs e)
         {
-            int runsCount = GetRunsCount();
-            int count = GetRequestedCount();
-            string workflow = WorkflowPicker.SelectedItem?.ToString() ?? "None";
+            ResetAndClear();
+            Debug.WriteLine("[.NET WORKFLOW 3] Create track (GPX) from location and search for POI from service (open street map?)");
+        }
 
-            if (count <= 0 || runsCount <= 0)
+        private async void ExecuteWorkflow_FlashingUpdates(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[.NET WORKFLOW 4] Flashing graphics for updated data, polling rest endpoint");
+        }
+
+        private async void ExecuteWorkflow_PicturePopups(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[FLUTTER WORKFLOW 1] Embedded json with pictures for popups");
+        }
+
+        private async void ExecuteWorkflow_GeocodePoints(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[FLUTTER WORKFLOW 2] Geocoded points or taps");
+        }
+
+        private async void ExecuteWorkflow_TransferOverlay(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[FLUTTER WORKFLOW 3] Transfer overlay between map/scene");
+        }
+
+        private async void ExecuteWorkflow_QueryByExtent(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[FLUTTER WORKFLOW 4] Query by extent and draw data");
+        }
+
+        private async void ExecuteWorkflow_FilterGraphics(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[FLUTTER WORKFLOW 5] Load graphics from JSON and feature service, apply filters by search");
+        }
+
+        private async void ExecuteWorkflow_POIByRoute(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[FLUTTER WORKFLOW 6] POI source displayed by selected route");
+        }
+
+        private async void ExecuteWorkflow_MultifacetedRenderer(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[QT WORKFLOW 1] Complex multifaceted renderer based on selection location");
+        }
+
+        private async void ExecuteWorkflow_GeoJSONGraphics(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[QT WORKFLOW 2] Graphics from geojson");
+        }
+
+        private async void ExecuteWorkflow_TraverseRoute(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[QT WORKFLOW 3] Route pins, switch to traversed based on location traveled.");
+        }
+
+        private async void ExecuteWorkflow_ComplexPopup(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[QT WORKFLOW 4] Need graphic identify and complex popup");
+        }
+
+        private async void ExecuteWorkflow_TextLabels(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[QT WORKFLOW 5] Labels as text symbols");
+        }
+
+        private async void ExecuteWorkflow_FollowGraphic(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[QT WORKFLOW 6] Following a graphic");
+        }
+
+        private async void ExecuteWorkflow_ShowNearbyPoints(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[SWIFT WORKFLOW 1] Show points nearby location, how should graphics be stored?");
+        }
+
+        private async void ExecuteWorkflow_DroneTrack(object? sender, EventArgs e)
+        {
+            ResetAndClear();
+            Debug.WriteLine("[SWIFT WORKFLOW 2] Drone flying by track with location, tap to move there");
+        }
+
+        private void OnSceneViewTapped_AddGraphics(object sender, Esri.ArcGISRuntime.Maui.GeoViewInputEventArgs e)
+        {
+            var tappedLocation = e.Location;
+            Debug.WriteLine($"Tapped location: {tappedLocation}");
+
+            Geometry geometry = new MapPoint(tappedLocation.X, tappedLocation.Y, tappedLocation.Z);
+            Graphic graphic = new Graphic(geometry);
+
+            graphicsOverlay.Graphics.Add(graphic);
+            graphicsCount++;
+
+            switch(passiveMode)
             {
-                return;
-            }
-
-            EventTimer.Text = " // event time";
-            DrawTimer.Text = " // draw time";
-            Stopwatch operationTimer = Stopwatch.StartNew();
-            Stopwatch runTimer = new Stopwatch();
-
-            double[] runTimes = new double[runsCount];
-            isBatchRun = true;
-
-            try
-            {
-                for (int i = 0; i < runsCount; i++)
-                {
-                    runTimer.Restart();
-                    switch (workflow)
+                case "editingExport":
+                    if (graphicsCount > 4)
                     {
-                        case "Move graphics (uniform)":
-                            MoveGraphicsUniformOperation(updateUi: false);
-                            break;
-                        case "Move graphics (random)":
-                            MoveGraphicsRandomOperation(updateUi: false);
-                            break;
-                        case "Add lines":
-                            await AddGraphicsOperation(false, "line");
-                            break;
-                        case "Add polygons":
-                            await AddGraphicsOperation(updateUi: false, "polygon");
-                            break;
-                        case "Add/remove overlay":
-                            RemoveOverlayOperation(updateUi: false);
-                            AddOverlayOperation(updateUi: false);
-                            break;
-                        case "Add/move/remove":
-                            //AddGraphicsOperation(updateUi: false);
-                            MoveGraphicsRandomOperation(updateUi: false);
-                            RemoveGraphicsOperation(updateUi: false);
-                            break;
-                        case "Add/give symbols/remove":
-                            //AddGraphicsOperation(updateUi: false);
-                            await AddSymbolsOperationAsync(updateUi: false);
-                            RemoveGraphicsOperation(updateUi: false);
-                            break;
-                        case "Add/give symbols/remove overlay":
-                            //AddGraphicsOperation(updateUi: false);
-                            await AddSymbolsOperationAsync(updateUi: false);
-                            RemoveOverlayOperation(updateUi: false);
-                            RemoveGraphicsOperation(updateUi: false);
-                            AddOverlayOperation(updateUi: false);
-                            break;
-                        default:
-                            StatusLabel.Text = $"Unknown workflow: {workflow}";
-                            return;
+                        Debug.WriteLine("Maximum graphics count reached.");
+                        sceneView.GeoViewTapped -= OnSceneViewTapped_AddGraphics;
+                        ExportGraphics();
+
+                        return;
                     }
-                    runTimer.Stop();
-                    runTimes[i] = runTimer.Elapsed.TotalMilliseconds;
-                }
-            }
-            finally
-            {
-                isBatchRun = false;
+                    break;
+                case "MissileTrajectory":
+                    if (graphicsCount == 2)
+                    {
+                        Debug.WriteLine("Maximum graphics count reached.");
+                        sceneView.GeoViewTapped -= OnSceneViewTapped_AddGraphics;
+                        createMissileTrajectory();
+
+                        return;
+                    }
+                    break;
+                default:
+                    break;
             }
 
-            operationTimer.Stop();
-            EventTimer.Text = $"Total time: {operationTimer.ElapsedMilliseconds} ms // slowest time: {runTimes.Max()} // fastest time: {runTimes.Min()} // average time: {runTimes.Average()}";
-
-            try
-            {
-                //string csvPath = await SaveRunTimesCsvAsync(workflow, runTimes);
-                StatusLabel.Text = $"Completed {runsCount} runs of workflow: {workflow}.";
-            }
-            catch (Exception ex)
-            {
-                StatusLabel.Text = $"Completed {runsCount} runs of workflow: {workflow}. CSV save failed: {ex.Message}";
-            }
         }
 
-        private async void OnSceneViewTapped(object? sender, Esri.ArcGISRuntime.Maui.GeoViewInputEventArgs e)
+        private async void OnSceneViewTapped_IdentifyOn(object sender, Esri.ArcGISRuntime.Maui.GeoViewInputEventArgs e)
         {
             double tolerance = 10.0;
             int maximumResults = 5;
@@ -1711,134 +459,79 @@ namespace NETGraphicsTester
                 {
                     Graphic identifiedGraphic = identifyResult.Graphics.First();
 
-                    if (ShowIdentifyPopupCheckBox.IsChecked)
+                    switch (passiveMode)
                     {
-                        ShowIdentifyEditorForGraphic(identifiedGraphic);
-                    }
-                    else
-                    {
-                        identifiedGraphic.IsSelected = !identifiedGraphic.IsSelected;
-                        currentlyIdentifiedGraphic = null;
-                        IdentifyPopupOverlay.IsVisible = false;
+                        case "selectionHighlight":
+                            GraphicsOverlay highlightOverlay = new GraphicsOverlay();
+                            SimpleRenderer highlightRenderer = new SimpleRenderer(new SimpleLineSymbol(SimpleLineSymbolStyle.Solid, System.Drawing.Color.Cyan, 6));
+                            highlightOverlay.Renderer = highlightRenderer;
+                            Graphic highlightedGraphic = new Graphic(identifiedGraphic.Geometry);
+
+                            highlightOverlay.Graphics.Add(highlightedGraphic);
+                            sceneView.GraphicsOverlays.Add(highlightOverlay);
+                            break;
+                        default:
+                            identifiedGraphic.IsSelected = !identifiedGraphic.IsSelected;
+                            break;
                     }
                 }
                 else
                 {
-                    StatusLabel.Text = "Zero graphics identified.";
-                    IdentifyPopupOverlay.IsVisible = false;
+                    Debug.WriteLine("Zero graphics identified.");
                 }
             }
             catch (Exception ex)
             {
-                StatusLabel.Text = $"Error identifying graphics: {ex.Message}";
-                IdentifyPopupOverlay.IsVisible = false;
+                Debug.WriteLine($"Error identifying graphics: {ex.Message}");
             }
         }
 
-        private static string GetAttributeString(Graphic graphic, string attributeKey)
+        private void ExportGraphics()
         {
-            if (graphic.Attributes.TryGetValue(attributeKey, out object? value) && value != null)
+            Debug.WriteLine("Exporting graphics...");
+            foreach (var graphic in graphicsOverlay.Graphics)
             {
-                return value.ToString() ?? string.Empty;
-            }
-
-            return string.Empty;
-        }
-
-        private static int GetAttributeInt(Graphic graphic, string attributeKey, int defaultValue = 0)
-        {
-            if (graphic.Attributes.TryGetValue(attributeKey, out object? value) && value != null)
-            {
-                switch (value)
-                {
-                    case int intValue:
-                        return intValue;
-                    case long longValue:
-                        return checked((int)longValue);
-                    case string stringValue when int.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed):
-                        return parsed;
-                    case IConvertible convertible:
-                        try
-                        {
-                            return convertible.ToInt32(CultureInfo.InvariantCulture);
-                        }
-                        catch (Exception)
-                        {
-                            return defaultValue;
-                        }
-                }
-            }
-
-            return defaultValue;
-        }
-
-        private static int ParseAttributeInt(string? value, int defaultValue = 0)
-        {
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsed))
-            {
-                return parsed;
-            }
-
-            return defaultValue;
-        }
-
-        private static double ParseAttributeDouble(string? value, int defaultValue = 0)
-        {
-            if (double.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out double parsed))
-            {
-                Debug.WriteLine($"Parsed value {parsed} for class breaks renderer");
-                return parsed;
-            }
-
-            return defaultValue;
-        }
-
-        private void ShowIdentifyEditorForGraphic(Graphic graphic)
-        {
-            currentlyIdentifiedGraphic = graphic;
-            ClassValueEntry.Text = GetAttributeInt(graphic, "class_value").ToString(CultureInfo.InvariantCulture);
-            SizeValueEntry.Text = GetAttributeInt(graphic, "size_value").ToString(CultureInfo.InvariantCulture);
-            TransparencyValueEntry.Text = GetAttributeInt(graphic, "transparency_value").ToString(CultureInfo.InvariantCulture);
-            RotationValueEntry.Text = GetAttributeInt(graphic, "rotation_value").ToString(CultureInfo.InvariantCulture);
-            ColorValueEntry.Text = GetAttributeInt(graphic, "color_value").ToString(CultureInfo.InvariantCulture);
-            ClassBreaksEntry.Text = GetAttributeInt(graphic, "class_breaks").ToString(CultureInfo.InvariantCulture);
-            IdentifyPopupOverlay.IsVisible = true;
-        }
-
-        private void OnIdentifyPopupPreferenceChanged(object? sender, CheckedChangedEventArgs e)
-        {
-            if (!e.Value)
-            {
-                currentlyIdentifiedGraphic = null;
-                IdentifyPopupOverlay.IsVisible = false;
+                Debug.WriteLine($"Graphic: {graphic.Geometry}");
             }
         }
 
-        private void OnIdentifyEditorCancelClicked(object sender, EventArgs e)
+        private void createMissileTrajectory()
         {
-            currentlyIdentifiedGraphic = null;
-            IdentifyPopupOverlay.IsVisible = false;
-        }
+            Debug.WriteLine("Creating missile trajectory...");
 
-        private void OnIdentifyEditorOkClicked(object sender, EventArgs e)
-        {
-            if (currentlyIdentifiedGraphic == null)
+            if (!(graphicsOverlay.Graphics.Count == 2))
             {
-                IdentifyPopupOverlay.IsVisible = false;
+                Debug.WriteLine("Incorrect number of graphics for missile trajectory.");
                 return;
             }
 
-            currentlyIdentifiedGraphic.Attributes["class_value"] = ParseAttributeInt(ClassValueEntry.Text);
-            currentlyIdentifiedGraphic.Attributes["size_value"] = ParseAttributeInt(SizeValueEntry.Text);
-            currentlyIdentifiedGraphic.Attributes["transparency_value"] = ParseAttributeInt(TransparencyValueEntry.Text);
-            currentlyIdentifiedGraphic.Attributes["rotation_value"] = ParseAttributeInt(RotationValueEntry.Text);
-            currentlyIdentifiedGraphic.Attributes["color_value"] = ParseAttributeInt(ColorValueEntry.Text);
-            currentlyIdentifiedGraphic.Attributes["class_breaks"] = ParseAttributeDouble(ClassBreaksEntry.Text);
+            Graphic startGraphic = graphicsOverlay.Graphics[0];
+            Graphic endGraphic = graphicsOverlay.Graphics[1];
 
-            StatusLabel.Text = "Updated identified graphic attributes.";
-            IdentifyPopupOverlay.IsVisible = false;
-            currentlyIdentifiedGraphic = null;
+            MapPoint startPoint = (MapPoint)startGraphic.Geometry;
+            MapPoint endPoint = (MapPoint)endGraphic.Geometry;
+
+            GraphicsOverlay trajectoryOverlay = new GraphicsOverlay();
+            SimpleRenderer simpleRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Triangle, System.Drawing.Color.Red, 2));
+            trajectoryOverlay.Renderer = simpleRenderer;
+
+            for (int i = 0; i < 1000; i ++)
+            {
+                double dx = startPoint.X - endPoint.X;
+                double dy = startPoint.Y - endPoint.Y;
+                double dz = startPoint.Z - endPoint.Z;
+
+                MapPoint trajectoryPoint = new MapPoint(
+                    startPoint.X - dx * i / 1000,
+                    startPoint.Y - dy * i / 1000,
+                    startPoint.Z - dz * i / 1000,
+                    startPoint.SpatialReference
+                );
+                Graphic trajectoryGraphic = new Graphic(trajectoryPoint, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 2));
+                trajectoryOverlay.Graphics.Add(trajectoryGraphic);
+            }
+
+            sceneView.GraphicsOverlays.Add(trajectoryOverlay);
         }
-
     }
 }
