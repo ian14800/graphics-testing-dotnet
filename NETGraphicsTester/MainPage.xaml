@@ -5,7 +5,7 @@
              x:Class="NETGraphicsTester.MainPage"
              BackgroundColor="{AppThemeBinding Light=#F7F7F7, Dark=#0F0F0F}">
 
-    <Grid RowDefinitions="*,*"
+    <Grid RowDefinitions="1.2*,0.8*"
           RowSpacing="12"
           Padding="12">
         <Border Grid.Row="0"
@@ -32,30 +32,30 @@
         <ScrollView Grid.Row="1"
                     Orientation="Vertical">
             <VerticalStackLayout Spacing="8">
-                <Button x:Name="Workflow1Button" Text="JS 1: Model LOD Preview" Clicked="ExecuteWorkflow_ModelLODs" />
-                <Button x:Name="Workflow2Button" Text="JS 2: Search Results" Clicked="ExecuteWorkflow_SearchResults" />
-                <Button x:Name="Workflow3Button" Text="JS 3: GPS Accuracy" Clicked="ExecuteWorkflow_GPSAccuracy" />
-                <Button x:Name="Workflow4Button" Text="JS 4: Data Extraction" Clicked="ExecuteWorkflow_DataExtraction" />
-                <Button x:Name="Workflow5Button" Text="JS 5: Editing / Export" Clicked="ExecuteWorkflow_EditingExport" />
-                <Button x:Name="Workflow6Button" Text="JS 6: Selection Highlight" Clicked="ExecuteWorkflow_SelectionHighlight" />
-                <Button x:Name="Workflow7Button" Text=".NET 1: Missile Trajectory" Clicked="ExecuteWorkflow_MissileTrajectory" />
-                <Button x:Name="Workflow8Button" Text=".NET 2: Web Renderer" Clicked="ExecuteWorkflow_WebRenderer" />
-                <Button x:Name="Workflow9Button" Text=".NET 3: Create Track" Clicked="ExecuteWorkflow_CreateTrack" />
-                <Button x:Name="Workflow10Button" Text=".NET 4: Flashing Updates" Clicked="ExecuteWorkflow_FlashingUpdates" />
-                <Button x:Name="Workflow11Button" Text="Flutter 1: Picture Popups" Clicked="ExecuteWorkflow_PicturePopups" />
-                <Button x:Name="Workflow12Button" Text="Flutter 2: Geocode Points" Clicked="ExecuteWorkflow_GeocodePoints" />
-                <Button x:Name="Workflow13Button" Text="Flutter 3: Transfer Overlay" Clicked="ExecuteWorkflow_TransferOverlay" />
-                <Button x:Name="Workflow14Button" Text="Flutter 4: Query by Extent" Clicked="ExecuteWorkflow_QueryByExtent" />
-                <Button x:Name="Workflow15Button" Text="Flutter 5: Filter Graphics" Clicked="ExecuteWorkflow_FilterGraphics" />
-                <Button x:Name="Workflow16Button" Text="Flutter 6: POI by Route" Clicked="ExecuteWorkflow_POIByRoute" />
-                <Button x:Name="Workflow17Button" Text="Qt 1: Multifaceted Renderer" Clicked="ExecuteWorkflow_MultifacetedRenderer" />
-                <Button x:Name="Workflow18Button" Text="Qt 2: GeoJSON Graphics" Clicked="ExecuteWorkflow_GeoJSONGraphics" />
-                <Button x:Name="Workflow19Button" Text="Qt 3: Traverse Route" Clicked="ExecuteWorkflow_TraverseRoute" />
-                <Button x:Name="Workflow20Button" Text="Qt 4: Complex Popup" Clicked="ExecuteWorkflow_ComplexPopup" />
-                <Button x:Name="Workflow21Button" Text="Qt 5: Text Labels" Clicked="ExecuteWorkflow_TextLabels" />
-                <Button x:Name="Workflow22Button" Text="Qt 6: Follow Graphic" Clicked="ExecuteWorkflow_FollowGraphic" />
-                <Button x:Name="Workflow23Button" Text="Swift 1: Nearby Points" Clicked="ExecuteWorkflow_ShowNearbyPoints" />
-                <Button x:Name="Workflow24Button" Text="Swift 2: Drone Track" Clicked="ExecuteWorkflow_DroneTrack" />
+                <Button Text="JS 1: Model LOD Preview" Clicked="ExecuteWorkflow_ModelLODs" />
+                <Button Text="JS 2: Search Results" Clicked="ExecuteWorkflow_SearchResults" IsEnabled="False" />
+                <Button Text="JS 3: GPS Accuracy" Clicked="ExecuteWorkflow_GPSAccuracy" IsEnabled="False"/>
+                <Button Text="JS 4: Data Extraction" Clicked="ExecuteWorkflow_DataExtraction" />
+                <Button Text="JS 5: Editing / Export" Clicked="ExecuteWorkflow_EditingExport" />
+                <Button Text="JS 6: Selection Highlight" Clicked="ExecuteWorkflow_SelectionHighlight" />
+                <Button Text=".NET 1: Missile Trajectory" Clicked="ExecuteWorkflow_MissileTrajectory" />
+                <Button Text=".NET 2: Web Renderer" Clicked="ExecuteWorkflow_WebRenderer" />
+                <Button Text=".NET 3: Create Track" Clicked="ExecuteWorkflow_CreateTrack" IsEnabled="False" />
+                <Button Text=".NET 4: Flashing Updates" Clicked="ExecuteWorkflow_FlashingUpdates" IsEnabled="False"/>
+                <Button Text="Flutter 1: Picture Popups" Clicked="ExecuteWorkflow_PicturePopups" IsEnabled="False"/>
+                <Button Text="Flutter 2: Geocode Points" Clicked="ExecuteWorkflow_GeocodePoints" />
+                <Button Text="Flutter 3: Transfer Overlay" Clicked="ExecuteWorkflow_TransferOverlay" />
+                <Button Text="Flutter 4: Query by Extent" Clicked="ExecuteWorkflow_QueryByExtent" />
+                <Button Text="Flutter 5: Filter Graphics" Clicked="ExecuteWorkflow_FilterGraphics" />
+                <Button Text="Flutter 6: POI by Route" Clicked="ExecuteWorkflow_POIByRoute" IsEnabled="False"/>
+                <Button Text="Qt 1: Multifaceted Renderer" Clicked="ExecuteWorkflow_MultifacetedRenderer" />
+                <Button Text="Qt 2: GeoJSON Graphics" Clicked="ExecuteWorkflow_GeoJSONGraphics" />
+                <Button Text="Qt 3: Traverse Route" Clicked="ExecuteWorkflow_TraverseRoute" IsEnabled="False"/>
+                <Button Text="Qt 4: Complex Popup" Clicked="ExecuteWorkflow_ComplexPopup"/>
+                <Button Text="Qt 5: Text Labels" Clicked="ExecuteWorkflow_TextLabels" />
+                <Button Text="Qt 6: Follow Graphic" Clicked="ExecuteWorkflow_FollowGraphic" />
+                <Button Text="Swift 1: Nearby Points" Clicked="ExecuteWorkflow_ShowNearbyPoints" IsEnabled="False"/>
+                <Button Text="Swift 2: Drone Track" Clicked="ExecuteWorkflow_DroneTrack" IsEnabled="False"/>
             </VerticalStackLayout>
         </ScrollView>
     </Grid>

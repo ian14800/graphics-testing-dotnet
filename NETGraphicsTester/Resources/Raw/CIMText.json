@@ -1,4 +1,0 @@
-{
-  "symbol": {"name":"Platanus","type":"PointSymbol3D","symbolLayers":[{"type":"Object","width":9,"height":14,"depth":9,"anchor":"origin","resource":{"href":"https://static.arcgis.com/arcgis/styleItems/ThematicTrees/gltf/resource/PlatanusOccidentalis.glb"}}]},
-  "type": "simple"
-}
