@@ -28,7 +28,7 @@ namespace NETGraphicsTester
         private bool _sceneReady;
         private readonly LocationDataSource _locationSource = new SystemLocationDataSource();
         // Should be false if using real location
-        private bool _useSimulatedLocation = false;
+        private bool _useSimulatedLocation = true;
         
         private MapPoint? _latestPosition;
         private Graphic? _positionGraphic;
@@ -773,19 +773,11 @@ namespace NETGraphicsTester
 
             graphicsOverlay.Graphics.Add(followGraphic);
 
-            var trackGraphics = sceneView.GraphicsOverlays.ElementAt(1).Graphics;
+            GraphicCollection trackGraphics = sceneView.GraphicsOverlays.ElementAt(1).Graphics;
 
-            foreach (var graphic in trackGraphics)
-            {
-                var geometry = graphic.Geometry;
-                if (geometry is MapPoint mapPoint)
-                {
-                    followGraphic.Geometry = mapPoint;
-                    sceneView.SetViewpoint(new Viewpoint(mapPoint));
-                }
-                Thread.Sleep(10);
-            }
+            await AnimateFollowGraphic(trackGraphics, followGraphic);
         }
+
 
         private async void ExecuteWorkflow_ShowNearbyPoints(object? sender, EventArgs e)
         {
@@ -2036,5 +2028,19 @@ namespace NETGraphicsTester
                 }
             }
         }
+
+        private async Task AnimateFollowGraphic(GraphicCollection trackGraphics, Graphic followGraphic)
+        {
+            foreach (var graphic in trackGraphics)
+            {
+                var geometry = graphic.Geometry;
+                if (geometry is MapPoint mapPoint)
+                {
+                    followGraphic.Geometry = mapPoint;
+                }
+                Thread.Sleep(10);
+            }
+        }
+
     }
 }
