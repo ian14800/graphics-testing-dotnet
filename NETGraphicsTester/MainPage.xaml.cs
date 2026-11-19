@@ -126,56 +126,6 @@ namespace NETGraphicsTester
             }
         }
 
-        async private Task AddGraphicsOperation(Geometry geometry)
-        {
-            Graphic graphic = new Graphic(geometry);
-            graphicsOverlay.Graphics.Add(graphic);
-        }
-
-        private async Task AddRandomGraphics(int count)
-        {
-            Envelope? extent = sceneView.GetCurrentViewpoint(ViewpointType.BoundingGeometry)?.TargetGeometry as Envelope;
-            MapPoint? center = sceneView.GetCurrentViewpoint(ViewpointType.CenterAndScale)?.TargetGeometry as MapPoint;
-            double baseZ = center?.Z ?? 0;
-            const double zRange = 500;
-
-            if (extent == null || center == null)
-            {
-                Debug.WriteLine("Extent or center is null");
-                return;
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                double x = extent.XMin + (random.NextDouble() * (extent.XMax - extent.XMin));
-                double y = extent.YMin + (random.NextDouble() * (extent.YMax - extent.YMin));
-                double z = baseZ + ((random.NextDouble() * 2 * zRange) - zRange);
-                MapPoint point = new MapPoint(x, y, z, extent.SpatialReference);
-
-                Graphic graphic = new Graphic(point);
-                graphicsOverlay.Graphics.Add(graphic);
-            }
-        }
-        private void RemoveGraphicsOperation(int? count = null, int? index = null)
-        {
-            if (count.HasValue)
-            {
-                int removeCount = Math.Min(count.Value, graphicsOverlay.Graphics.Count);
-                for (int i = 0; i < removeCount; i++)
-                {
-                    graphicsOverlay.Graphics.RemoveAt(graphicsOverlay.Graphics.Count - 1);
-                }
-            }
-            if (index.HasValue)
-            {
-                if (index.Value >= 0 && index.Value < graphicsOverlay.Graphics.Count)
-                {
-                    graphicsOverlay.Graphics.RemoveAt(index.Value);
-                }
-            }
-        }
-
-
         async private Task<MultilayerPointSymbol> createModelLayerFromFile(string fileName, int size = 50)
         {
             string file = $"{fileName}.glb";
@@ -198,45 +148,6 @@ namespace NETGraphicsTester
             };
 
             return multilayerSymbol;
-        }
-
-        async private Task<MultilayerPointSymbol> createPictureLayerFromFile(string fieldValue, double size = 80.0)
-        {
-            string file = $"{fieldValue}.png";
-
-            string picturePath = Path.Combine(FileSystem.CacheDirectory, file);
-            if (!File.Exists(picturePath))
-            {
-                using var sourceStream = await FileSystem.OpenAppPackageFileAsync(file);
-                using var destStream = File.Create(picturePath);
-                await sourceStream.CopyToAsync(destStream);
-            }
-            PictureMarkerSymbolLayer pictureLayer = new PictureMarkerSymbolLayer(new Uri(picturePath, UriKind.Absolute)) { Size = size };
-            MultilayerPointSymbol multilayerSymbol = new MultilayerPointSymbol(new SymbolLayer[] { pictureLayer });
-            return multilayerSymbol;
-        }
-
-
-        private void MoveGraphics(int index, Geometry newGeometry)
-        {
-            if (index < 0 || index >= graphicsOverlay.Graphics.Count)
-            {
-                return;
-            }
-
-            Graphic graphic = graphicsOverlay.Graphics[index];
-            graphic.Geometry = newGeometry;
-        }
-
-        private void ToggleGraphicsVisibility(int index)
-        {
-            if (graphicsOverlay.Graphics[index].IsVisible)
-            {
-                graphicsOverlay.Graphics[index].IsVisible = false;
-            } else
-            {
-                graphicsOverlay.Graphics[index].IsVisible = true;
-            }
         }
 
         private async void OnSceneViewTapped_Default(object? sender, Esri.ArcGISRuntime.Maui.GeoViewInputEventArgs e)
