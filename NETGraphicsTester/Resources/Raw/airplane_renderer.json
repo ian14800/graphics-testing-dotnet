@@ -1,0 +1,26 @@
+{
+  "type": "simple",
+  "symbol": {
+    "type": "PointSymbol3D",
+    "symbolLayers": [
+      {
+        "type": "Object",
+        "width": 20.16479206085205,
+        "height": 4.899132490158081,
+        "depth": 22.367185592651367,
+        "anchor": "origin",
+        "resource": {
+          "href": "https://static.arcgis.com/arcgis/styleItems/RealisticTransportation/gltf_basisu/resource/Airplane_Small_Passenger.glb"
+        }
+      }
+    ]
+  },
+  "visualVariables": [
+    {
+      "type": "rotationInfo",
+      "field": "rotation_value",
+      "axis": "heading",
+      "rotationType": "geographic"
+    }
+  ]
+}
