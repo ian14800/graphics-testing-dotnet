@@ -5,15 +5,17 @@ using Esri.ArcGISRuntime.Geometry;
 using Esri.ArcGISRuntime.UI;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
+using Esri.ArcGISRuntime;
 using Esri.ArcGISRuntime.Data;
 using Esri.ArcGISRuntime.Location;
 using ArcLocation = Esri.ArcGISRuntime.Location.Location;
 using Esri.ArcGISRuntime.Tasks.Geocoding;
 using Esri.ArcGISRuntime.Maui;
 using System.Reflection.Metadata;
+using System.Threading;
 
 namespace NETGraphicsTester
 {
@@ -28,7 +30,7 @@ namespace NETGraphicsTester
         private bool _sceneReady;
         private readonly LocationDataSource _locationSource = new SystemLocationDataSource();
         // Should be false if using real location
-        private bool _useSimulatedLocation = true;
+        private bool _useSimulatedLocation = false;
         
         private MapPoint? _latestPosition;
         private Graphic? _positionGraphic;
@@ -38,12 +40,18 @@ namespace NETGraphicsTester
         private const double TriggerDistanceMeters = 50;
 
         Surface baseSurface;
+        Scene scene;
 
         GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
         SimpleRenderer defaultRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Yellow, 15));
         Graphic? droneGraphic;
-        private const double NearbyRadiusMeters = 800;
+        private const double NearbyRadiusMeters = 400;
         private static readonly HttpClient OverpassHttpClient = new();
+        private static readonly string[] OverpassEndpoints =
+        [
+            "https://overpass-api.de/api/interpreter",
+            "https://overpass.private.coffee/api/interpreter"
+        ];
         private readonly Queue<MapPoint> _droneDestinations = new();
         private CancellationTokenSource? _workflowCancellation;
         private bool _isDroneAnimating;
@@ -94,9 +102,9 @@ namespace NETGraphicsTester
                     return;
                 }
 
-                localSceneView.WarningsChanged += SceneView_WarningsChanged;
+                 //localSceneView.WarningsChanged += SceneView_WarningsChanged;
 
-                var scene = new Scene(SceneViewingMode.Local, BasemapStyle.ArcGISChartedTerritory);
+                scene = new Scene(SceneViewingMode.Global, BasemapStyle.ArcGISChartedTerritory);
                 var camera = new Camera(37.7, -122.4194, 15000, 0, 30, 0);
 
 
@@ -173,6 +181,7 @@ namespace NETGraphicsTester
             sceneView.GeoViewTapped -= OnSceneViewTapped_AddGraphics;
             sceneView.GeoViewTapped -= OnSceneViewTapped_IdentifyOn;
             sceneView.GeoViewDoubleTapped -= OnSceneViewDoubleTapped_MoveLocation;
+            scene.IsClippingEnabled = false;
 
             _workflowCancellation?.Cancel();
             _workflowCancellation?.Dispose();
@@ -601,9 +610,16 @@ namespace NETGraphicsTester
             if (!await ResetAndClear()) return;
             Debug.WriteLine("[QT WORKFLOW 1] Complex multifaceted renderer based on selection location");
 
-            await ReadGeoJsonPoints("SF_points.geojson");
-
-            await ApplySymbols("multifaceted");
+            try
+            {
+                await ReadGeoJsonPoints("SF_points.geojson");
+                await ApplySymbols("multifaceted");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Multifaceted renderer failed: {ex}");
+                await DisplayAlert("Multifaceted Renderer", ex.Message, "OK");
+            }
         }
 
         private async void ExecuteWorkflow_GeoJSONGraphics(object? sender, EventArgs e)
@@ -619,7 +635,7 @@ namespace NETGraphicsTester
             if (!await ResetAndClear()) return;
             Debug.WriteLine("[QT WORKFLOW 3] Route pins, switch to traversed based on location traveled.");
             passiveMode = "traverseRoute";
-            await ReadGeoJsonPoints("SF_points.geojson");
+            await ImportGraphicsFromServiceAsync("https://services5.arcgis.com/N82JbI5EYtAkuUKU/arcgis/rest/services/SF_Points_3D/FeatureServer/12");
 
             var workflow = new CancellationTokenSource();
             _workflowCancellation = workflow;
@@ -687,6 +703,14 @@ namespace NETGraphicsTester
             GraphicCollection trackGraphics = sceneView.GraphicsOverlays.ElementAt(1).Graphics;
 
             await AnimateFollowGraphic(trackGraphics, followGraphic);
+
+            //new Thread(() =>
+            //{
+            //    Thread.CurrentThread.IsBackground = true;
+
+            //    AnimateFollowGraphic(trackGraphics, followGraphic);
+            //    Debug.WriteLine("Animation finished");
+            //}).Start();
         }
 
 
@@ -703,50 +727,206 @@ namespace NETGraphicsTester
         {
             if (!await ResetAndClear()) return;
             Debug.WriteLine("[SWIFT WORKFLOW 2] Drone flying by track with location, tap to move there");
-            passiveMode = "droneTrack";
 
             var workflowCancellation = new CancellationTokenSource();
             _workflowCancellation = workflowCancellation;
 
             try
             {
-                string droneSymbolJson = await File.ReadAllTextAsync("drone.json");
-                Symbol droneSymbol = Symbol.FromJson(droneSymbolJson);
+                using var stream = await FileSystem.OpenAppPackageFileAsync("drone.json");
+                using var reader = new StreamReader(stream);
+                string droneSymbolJson = await reader.ReadToEndAsync();
+                if (!ReferenceEquals(_workflowCancellation, workflowCancellation)) return;
+
+                Symbol droneSymbol = Symbol.FromJson(droneSymbolJson)
+                    ?? throw new InvalidDataException("The drone asset did not contain a symbol.");
                 MapPoint startPoint = new MapPoint(-13628102.2396, 4548508.0037, SpatialReferences.WebMercator);
                 droneGraphic = new Graphic(startPoint, droneSymbol);
                 graphicsOverlay.Graphics.Add(droneGraphic);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is IOException or InvalidDataException or ArcGISRuntimeException or ArgumentException or JsonException)
             {
                 Debug.WriteLine($"Unable to load the drone symbol: {ex}");
+                if (ReferenceEquals(_workflowCancellation, workflowCancellation))
+                {
+                    await DisplayAlert("Drone track", $"Could not load the bundled drone symbol: {ex.Message}", "OK");
+                }
                 return;
             }
 
+            passiveMode = "droneTrack";
             sceneView.GeoViewTapped += OnSceneViewTapped_AddGraphics;
         }
 
         private async void ExecuteWorkflow_MovingOrbit(object? sender, EventArgs e)
         {
             if (!await ResetAndClear()) return;
-            Debug.WriteLine("[AI WORKFLOW 1] 50,000 moving graphics, continuous orbiting camera");
+
+            const int count = 50_000;
+            const int updatesPerTick = 5_000;
+            const double orbitSeconds = 30;
+
+            var workflow = new CancellationTokenSource();
+            _workflowCancellation = workflow;
+            CancellationToken token = workflow.Token;
+
+            var overlay = graphicsOverlay;
+            var sr = SpatialReferences.Wgs84;
+            var target = new MapPoint(-122.4194, 37.7749, 600, sr);
+            var rng = new Random(150);
+
+            var particles = new (Graphic Graphic, double X, double Y, double Z)[count];
+
+            try
+            {
+                overlay.RenderingMode = GraphicsRenderingMode.Dynamic;
+                overlay.SceneProperties.SurfacePlacement = SurfacePlacement.Absolute;
+                overlay.Renderer = new SimpleRenderer(new SimpleMarkerSymbol(
+                    SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Orange, 3));
+
+                Camera OrbitCamera(double seconds) =>
+                    new Camera(target, 6_000, seconds * 360 / orbitSeconds % 360, 55, 0);
+
+                sceneView.SetViewpointCamera(OrbitCamera(0));
+
+                for (int i = 0; i < count; i++)
+                {
+                    double x = target.X + (rng.NextDouble() - 0.5) * 0.035;
+                    double y = target.Y + (rng.NextDouble() - 0.5) * 0.025;
+                    double z = 300 + rng.NextDouble() * 600;
+
+                    var graphic = new Graphic(new MapPoint(x, y, z, sr));
+                    overlay.Graphics.Add(graphic);
+                    particles[i] = (graphic, x, y, z);
+
+                    if ((i + 1) % 1_000 == 0)
+                        await Task.Delay(1, token);
+                }
+
+                var clock = Stopwatch.StartNew();
+                using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(33));
+                int next = 0;
+
+                while (await timer.WaitForNextTickAsync(token))
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    double seconds = clock.Elapsed.TotalSeconds;
+                    sceneView.SetViewpointCamera(OrbitCamera(seconds));
+
+                    double dx = 0.003 * Math.Sin(seconds);
+                    double dy = 0.002 * Math.Sin(0.7 * seconds);
+
+                    int end = Math.Min(next + updatesPerTick, count);
+                    for (int i = next; i < end; i++)
+                    {
+                        var (graphic, x, y, z) = particles[i];
+                        int direction = i % 2 == 0 ? 1 : -1;
+                        graphic.Geometry = new MapPoint(
+                            x + direction * dx, y + direction * dy, z, sr);
+                    }
+
+                    next = end == count ? 0 : end;
+                }
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested)
+            {
+                Debug.WriteLine("Moving orbit stopped.");
+            }
+            catch (Exception ex) when (ex is ArcGISRuntimeException or ArgumentException)
+            {
+                Debug.WriteLine($"Moving orbit failed: {ex}");
+                if (ReferenceEquals(_workflowCancellation, workflow))
+                    await DisplayAlert("Moving Orbit", ex.Message, "OK");
+            }
+            finally
+            {
+                if (ReferenceEquals(_workflowCancellation, workflow))
+                {
+                    _workflowCancellation = null;
+                    workflow.Dispose();
+                }
+            }
         }
 
         private async void ExecuteWorkflow_StackedGraphics(object? sender, EventArgs e)
         {
             if (!await ResetAndClear()) return;
             Debug.WriteLine("[AI WORKFLOW 2] Large number of graphics at same x,y with incremental z differences");
+
+            int graphicCount = 30000;
+            double[] coordinates = [37.77880015922562, -122.4413870309061];
+
+            using var stream = await FileSystem.OpenAppPackageFileAsync("unique_value_renderer.json");
+            using var reader = new StreamReader(stream);
+            string uvr = await reader.ReadToEndAsync();
+
+            Renderer uniqueVR = Renderer.FromJson(uvr);
+
+            graphicsOverlay.Renderer = uniqueVR;
+            graphicsOverlay.SceneProperties.SurfacePlacement = SurfacePlacement.Absolute;
+
+            for (int i = 0; i < graphicCount; i++)
+            {
+                MapPoint point = new MapPoint(coordinates[1], coordinates[0], 1 + (i * 0.01), SpatialReferences.Wgs84);
+                Graphic graphic = new Graphic(point);
+                graphic.Attributes["class_value"] =
+                    (1 + i % 5).ToString(CultureInfo.InvariantCulture);
+                graphic.Attributes["stack_index"] = i;
+                graphicsOverlay.Graphics.Add(graphic);
+            }
         }
 
         private async void ExecuteWorkflow_OffscreenGraphics(object? sender, EventArgs e)
         {
             if (!await ResetAndClear()) return;
             Debug.WriteLine("[AI WORKFLOW 3] Many graphics added off screen");
+            int XMin = 0;
+            int XMax = 140;
+            int YMin = 0;
+            int YMax = 90;
+            int graphicsCount = 10000;
+
+            for (int i = 0; i < graphicsCount; i++)
+            {
+                MapPoint point = new MapPoint(random.Next(XMin, XMax), random.Next(YMin, YMax), random.Next(0, 500), SpatialReferences.Wgs84);
+                graphicsOverlay.Graphics.Add(new Graphic(point));
+            }
         }
 
         private async void ExecuteWorkflow_CrossBoundary(object? sender, EventArgs e)
         {
             if (!await ResetAndClear()) return;
             Debug.WriteLine("[AI WORKFLOW 4] Moving graphics across clipping area boundaries");
+            await ReadGeoJsonPoints("SF_points.geojson");
+
+            var clippingGeom = new Envelope(
+                -122.5370259356245, 37.713218168099694,  // west, south
+                -122.32319055699686, 37.802940555403886, // east, north
+                SpatialReferences.Wgs84);
+            scene.ClippingArea = clippingGeom;
+            scene.IsClippingEnabled = true;
+
+            bool positiveDirection = true;
+
+            GraphicCollection graphics = graphicsOverlay.Graphics;
+
+            while (true)
+            {
+                int factor = positiveDirection ? 20000 : -20000;
+
+                foreach (Graphic graphic in graphics)
+                {
+                    MapPoint currentPoint = graphic.Geometry as MapPoint;
+                    MapPoint newPoint = new MapPoint(currentPoint.X + factor, currentPoint.Y, currentPoint.Z, SpatialReferences.WebMercator);
+
+                    graphic.Geometry = newPoint;
+                }
+
+                positiveDirection = !positiveDirection;
+
+                await Task.Delay(1000);
+            }
         }
 
         private async void OnSceneViewTapped_AddGraphics(object sender, GeoViewInputEventArgs e)
@@ -758,7 +938,10 @@ namespace NETGraphicsTester
             }
             Graphic graphic = new Graphic(tappedLocation);
 
-            graphicsOverlay.Graphics.Add(graphic);
+            if (passiveMode != "showNearbyPoints")
+            {
+                graphicsOverlay.Graphics.Add(graphic);
+            }
             graphicsCount++;
 
             switch(passiveMode)
@@ -808,12 +991,23 @@ namespace NETGraphicsTester
                 case "showNearbyPoints":
                 {
                     sceneView.GeoViewTapped -= OnSceneViewTapped_AddGraphics;
-                    graphic.Symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Orange, 18);
-                    MapPoint center = (MapPoint)GeometryEngine.Project(tappedLocation, SpatialReferences.Wgs84);
                     GraphicsOverlay targetOverlay = graphicsOverlay;
+                    targetOverlay.Graphics.Clear();
+                    graphic.Symbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Orange, 18);
+                    targetOverlay.Graphics.Add(graphic);
                     CancellationToken token = _workflowCancellation?.Token ?? CancellationToken.None;
 
-                    await ShowNearbyPoiAsync(center, targetOverlay, token);
+                    try
+                    {
+                        await ShowNearbyPoiAsync(tappedLocation, targetOverlay, token);
+                    }
+                    finally
+                    {
+                        if (!token.IsCancellationRequested)
+                        {
+                            sceneView.GeoViewTapped += OnSceneViewTapped_AddGraphics;
+                        }
+                    }
                     break;
                 }
                 case "droneTrack":
@@ -1011,15 +1205,28 @@ namespace NETGraphicsTester
 
                 if (symbolType == "multifaceted")
                 {
+                    attributes.TryGetValue("class_value", out var classAttribute);
+                    attributes.TryGetValue("att_value", out var valueAttribute);
+                    if (string.IsNullOrWhiteSpace(Convert.ToString(classAttribute, CultureInfo.InvariantCulture)) ||
+                        string.IsNullOrWhiteSpace(Convert.ToString(valueAttribute, CultureInfo.InvariantCulture)))
+                    {
+                        attributes.TryGetValue("OBJECTID", out var objectId);
+                        Debug.WriteLine($"Feature {objectId}: missing class_value or att_value; retaining the default symbol.");
+                        graphic.Symbol = null;
+                        continue;
+                    }
+
+                    int classValue = Convert.ToInt32(classAttribute, CultureInfo.InvariantCulture);
+                    int attValue = Convert.ToInt32(valueAttribute, CultureInfo.InvariantCulture);
                     SimpleMarkerSymbol highSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Diamond, System.Drawing.Color.Green, 20);
                     SimpleMarkerSymbol mediumSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Diamond, System.Drawing.Color.Yellow, 15);
                     SimpleMarkerSymbol lowSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Diamond, System.Drawing.Color.Orange, 10);
 
-                    if (Convert.ToInt32(attributes["class_value"]) > 3 && Convert.ToInt32(attributes["att_value"]) > 80)
+                    if (classValue > 3 && attValue > 80)
                     {
                         graphic.Symbol = highSymbol;
                     }
-                    else if (Convert.ToInt32(attributes["class_value"]) > 1 && Convert.ToInt32(attributes["att_value"]) > 40)
+                    else if (classValue > 1 && attValue > 40)
                     {
                         graphic.Symbol = mediumSymbol;
                     }
@@ -1227,16 +1434,18 @@ namespace NETGraphicsTester
             SimpleRenderer simpleRenderer = new SimpleRenderer(new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Triangle, System.Drawing.Color.Red, 2));
             trajectoryOverlay.Renderer = simpleRenderer;
 
-            for (int i = 0; i < 1000; i ++)
+            int numberPoints = 100;
+
+            for (int i = 0; i < numberPoints; i ++)
             {
                 double dx = startPoint.X - endPoint.X;
                 double dy = startPoint.Y - endPoint.Y;
                 double dz = startPoint.Z - endPoint.Z;
 
                 MapPoint trajectoryPoint = new MapPoint(
-                    startPoint.X - dx * i / 1000,
-                    startPoint.Y - dy * i / 1000,
-                    startPoint.Z - dz * i / 1000,
+                    startPoint.X - dx * i / numberPoints,
+                    startPoint.Y - dy * i / numberPoints,
+                    startPoint.Z - dz * i / numberPoints,
                     startPoint.SpatialReference
                 );
                 Graphic trajectoryGraphic = new Graphic(trajectoryPoint, new SimpleMarkerSymbol(SimpleMarkerSymbolStyle.Circle, System.Drawing.Color.Red, 2));
@@ -1439,34 +1648,76 @@ namespace NETGraphicsTester
             await Navigation.PushAsync(page);
         }
 
-        private async Task ShowNearbyPoiAsync(MapPoint location, GraphicsOverlay targetOverlay, CancellationToken cancellationToken)
+        private static async Task<string> FetchOverpassResponseAsync(string query, CancellationToken cancellationToken)
         {
-            var query = string.Format(
-                CultureInfo.InvariantCulture,
-                "[out:json][timeout:20];nwr(around:{0},{1},{2})[\"shop\"=\"convenience\"];out center 40;",
-                NearbyRadiusMeters, location.Y, location.X);
-
-            try
+            var failures = new List<string>();
+            foreach (string endpoint in OverpassEndpoints)
             {
+                string host = new Uri(endpoint).Host;
+                cancellationToken.ThrowIfCancellationRequested();
+                using var attempt = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                attempt.CancelAfter(TimeSpan.FromSeconds(60));
                 using var request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    "https://overpass.private.coffee/api/interpreter")
-                {
-                    Content = new StringContent(
-                        $"data={Uri.EscapeDataString(query)}",
-                        Encoding.UTF8,
-                        "application/x-www-form-urlencoded")
-                };
+                    HttpMethod.Get, $"{endpoint}?data={Uri.EscapeDataString(query)}");
                 request.Headers.UserAgent.ParseAdd("NETGraphicsTester/1.0");
 
-                using HttpResponseMessage response = await OverpassHttpClient.SendAsync(request, cancellationToken);
-                response.EnsureSuccessStatusCode();
+                string failure;
+                try
+                {
+                    using HttpResponseMessage response = await OverpassHttpClient.SendAsync(
+                        request, HttpCompletionOption.ResponseHeadersRead, attempt.Token);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return await response.Content.ReadAsStringAsync(attempt.Token);
+                    }
 
-                string responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+                    failure = $"{host}: HTTP {(int)response.StatusCode} ({response.ReasonPhrase})";
+                    string errorBody = await response.Content.ReadAsStringAsync(attempt.Token);
+                    Debug.WriteLine($"{failure}: {errorBody}");
+                    if ((int)response.StatusCode < 500 &&
+                        response.StatusCode is not (HttpStatusCode.TooManyRequests or HttpStatusCode.RequestTimeout))
+                    {
+                        throw new HttpRequestException(failure, null, response.StatusCode);
+                    }
+                }
+                catch (HttpRequestException ex) when (ex.StatusCode is null)
+                {
+                    failure = $"{host}: {ex.Message}";
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested && attempt.IsCancellationRequested)
+                {
+                    failure = $"{host}: timed out";
+                }
+
+                Debug.WriteLine($"Overpass attempt failed: {failure}");
+                failures.Add(failure);
+            }
+
+            throw new HttpRequestException(string.Join("; ", failures));
+        }
+
+        private async Task ShowNearbyPoiAsync(MapPoint location, GraphicsOverlay targetOverlay, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var center = (MapPoint)GeometryEngine.Project(location, SpatialReferences.Wgs84);
+                string query = FormattableString.Invariant(
+                    $"[out:json][timeout:60];node[shop=convenience](around:{NearbyRadiusMeters},{center.Y},{center.X});out body;");
+                string responseJson = await FetchOverpassResponseAsync(query, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
                 using JsonDocument document = JsonDocument.Parse(responseJson);
+                if (document.RootElement.TryGetProperty("remark", out JsonElement remark))
+                {
+                    throw new InvalidDataException($"Overpass returned an incomplete result: {remark}");
+                }
+                if (!document.RootElement.TryGetProperty("elements", out JsonElement elements) ||
+                    elements.ValueKind != JsonValueKind.Array)
+                {
+                    throw new InvalidDataException("The Overpass response did not contain an elements array.");
+                }
 
                 int addedCount = 0;
-                foreach (JsonElement element in document.RootElement.GetProperty("elements").EnumerateArray())
+                foreach (JsonElement element in elements.EnumerateArray())
                 {
                     if (!TryGetOverpassCoordinates(element, out double longitude, out double latitude))
                     {
@@ -1492,21 +1743,30 @@ namespace NETGraphicsTester
                     poiGraphic.Attributes["name"] = name;
                     poiGraphic.Attributes["source"] = "OpenStreetMap";
                     targetOverlay.Graphics.Add(poiGraphic);
+
+                    var labelGraphic = new Graphic(
+                        poiLocation,
+                        new TextSymbol(name, System.Drawing.Color.Black, 14, Esri.ArcGISRuntime.Symbology.HorizontalAlignment.Left, Esri.ArcGISRuntime.Symbology.VerticalAlignment.Bottom));
+
+                    targetOverlay.Graphics.Add(labelGraphic);
                     addedCount++;
                 }
 
                 if (addedCount == 0)
                 {
-                    await DisplayAlert("Nearby points", "No convenience stores were found within 800 meters.", "OK");
+                    await DisplayAlert("Nearby points", $"No convenience stores were found within {NearbyRadiusMeters} meters. Tap another location to search again.", "OK");
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or JsonException or ArcGISRuntimeException)
             {
                 Debug.WriteLine($"Unable to query nearby convenience stores: {ex}");
-                await DisplayAlert("Nearby points", $"The Overpass query failed: {ex.Message}", "OK");
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    await DisplayAlert("Nearby points", $"The Overpass query failed: {ex.Message}\n\nTap the scene to try again.", "OK");
+                }
             }
         }
 
@@ -1728,6 +1988,7 @@ namespace NETGraphicsTester
 
             MapPoint AtAltitude(MapPoint point) => 
                 new MapPoint(point.X, point.Y, altitudeMeters, SpatialReferences.WebMercator);
+
             
             for (int i = 0; i < aircraftCount; i ++)
             {
@@ -1787,11 +2048,13 @@ namespace NETGraphicsTester
                         MapPoint start = points[startIndices[i]];
                         MapPoint destination = points[destinationIndices[i]];
 
-                        aircraft[i].Geometry = new MapPoint(
+                         MapPoint newPoint = new MapPoint(
                             start.X + (destination.X - start.X) * progress,
                             start.Y + (destination.Y - start.Y) * progress,
                             altitudeMeters,
                             SpatialReferences.WebMercator);
+
+                        aircraft[i].Geometry = newPoint;
                     }
                 }
                 while (progress < 1);
@@ -1942,14 +2205,21 @@ namespace NETGraphicsTester
 
         private async Task AnimateFollowGraphic(GraphicCollection trackGraphics, Graphic followGraphic)
         {
+            // MapPoint startingPoint = (MapPoint)trackGraphics[0].Geometry;
+            // await sceneView.SetViewpointAsync(new Viewpoint(startingPoint));
+
             foreach (var graphic in trackGraphics)
             {
                 var geometry = graphic.Geometry;
+
                 if (geometry is MapPoint mapPoint)
                 {
                     followGraphic.Geometry = mapPoint;
+                    sceneView.SetViewpoint(new Viewpoint(mapPoint));
+                    //await sceneView.SetViewpointAsync(new Viewpoint(mapPoint));
                 }
-                Thread.Sleep(10);
+                await Task.Delay(50);
+                // Thread.Sleep(50);
             }
         }
 

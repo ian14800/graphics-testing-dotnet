@@ -14,17 +14,13 @@
                 BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#101010}"
                 MinimumHeightRequest="320">
             <Grid>
-                <esriUI:LocalSceneView x:Name="sceneView" Scene="{Binding Scene}" />
+                <esriUI:SceneView x:Name="sceneView" Scene="{Binding Scene}" />
                 <Border HorizontalOptions="End"
                         VerticalOptions="End"
                         Margin="10"
                         Padding="10,4"
                         StrokeThickness="0"
                         BackgroundColor="#AA000000">
-                    <Label x:Name="GraphicsCountLabel"
-                           Text="Graphics: 0"
-                           TextColor="White"
-                           FontSize="12" />
                 </Border>
             </Grid>
         </Border>

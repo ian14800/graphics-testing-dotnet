@@ -5,12 +5,12 @@
     "symbolLayers": [
       {
         "type": "Object",
-        "width": 20.16479206085205,
-        "height": 4.899132490158081,
-        "depth": 22.367185592651367,
+        "width": 200,
+        "height": 50,
+        "depth": 220,
         "anchor": "origin",
         "resource": {
-          "href": "https://static.arcgis.com/arcgis/styleItems/RealisticTransportation/gltf_basisu/resource/Airplane_Small_Passenger.glb"
+          "href": "./airplane.glb"
         }
       }
     ]
